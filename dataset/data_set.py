@@ -1,9 +1,8 @@
 import os
-import io
 import torch
 import pandas as pd
 
-from skimage import io
+from PIL import Image
 from torch.utils.data import Dataset
 
 
@@ -26,16 +25,14 @@ class LesionsDataset(Dataset):
             item_index = item_index.tolist()
 
         image_name = self.lesion_dataset.iloc[item_index, 1] + '.jpg'
-        lesion_type = self.lesion_dataset.iloc[item_index, -1]
-        dx_type = self.lesion_dataset.iloc[item_index, 2]
-
+        lesion_type = self.lesion_dataset.iloc[item_index, -2]
         image_source_path = os.path.join(self.root_dir, image_name)
-        image = io.imread(image_source_path)
+        image = Image.open(image_source_path)
 
-        sample = {'image': image, 'lesion_type': lesion_type, 'dx': dx_type}
         if self.transform:
-            sample = self.transform(sample)
+            image = self.transform(image)
 
+        sample = {'input': image, 'target': lesion_type}
         return sample
 
     def __len__(self):
