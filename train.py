@@ -1,4 +1,6 @@
 import argparse
+import torch, matplotlib.pyplot as plt
+import numpy as np
 
 from base import base_trainer
 from utils.train_utils import (
@@ -6,6 +8,7 @@ from utils.train_utils import (
     get_data_loaders,
     get_datasets,
     initialize_model,
+    get_sampler
 )
 
 
@@ -111,3 +114,5 @@ if __name__ == "__main__":
     )
 
     model, metrics = trainer.train(data_loaders=data_loaders, num_epochs=args.epochs)
+
+

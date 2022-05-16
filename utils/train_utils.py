@@ -20,7 +20,8 @@ def get_transforms(input_size, mode="train"):
                 transforms.Resize(input_size),
                 transforms.RandomHorizontalFlip(p=0.65),
                 transforms.RandomVerticalFlip(p=0.65),
-                transforms.RandomRotation(degrees=(0, 180)),
+                transforms.RandomRotation(degrees=(0, 90)),
+                transforms.RandomCrop(input_size),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std, inplace=True),
             ]
@@ -46,8 +47,9 @@ def get_sampler(
 ) -> None or WeightedRandomSampler:
     if not oversample:
         return None
+
     target = torch.tensor(
-        [sample.get("target") for sample in train_dataset], dtype=torch.int
+        [torch.argmax(sample.get("target")) for sample in train_dataset], dtype=torch.int
     )
     class_sample_count = torch.tensor(
         [(target == t).sum() for t in torch.unique(target, sorted=True)]
