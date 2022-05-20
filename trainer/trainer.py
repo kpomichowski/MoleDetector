@@ -55,7 +55,7 @@ class Trainer(base_trainer.BaseTrainer):
             
             correct_total += correct_predicts
 
-        training_loss, training_acc = self.__compute_metrics(
+        training_acc, training_loss = self.__compute_metrics(
             correct_total=correct_total,
             running_loss=running_loss,
             total_batches=len(data_loaders.get("train")),
@@ -126,6 +126,7 @@ class Trainer(base_trainer.BaseTrainer):
         total_items: int,
         total_batches: int,
     ) -> tuple:
-        acc = (100 * correct_total) / total_items
+        acc = 100 * correct_total / total_items
         r_loss = running_loss / total_batches
-        return acc, r_loss
+        accuracy, loss = np.round(acc, 3), np.round(r_loss)
+        return accuracy, loss
