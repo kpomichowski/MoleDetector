@@ -36,8 +36,8 @@ class Trainer(base_trainer.BaseTrainer):
 
             if self.model.name == "inceptionv3":
                 logits, aux_outputs = self.model(inputs)
-                loss = self.criterion(model_output=logits, targets=targets_)
-                loss_ = self.criterion(model_output=aux_outputs, targets=targets_)
+                loss = self._compute_loss(model_output=logits, targets=targets_)
+                loss_ = self._compute_loss(model_output=aux_outputs, targets=targets_)
                 loss = loss * 0.4 * loss_
             else:
                 logits = self.model(inputs)
