@@ -102,7 +102,6 @@ class Trainer(base_trainer.BaseTrainer):
                 )
 
                 correct_total += correct_predicts
-                total_items += batch_length
 
             val_acc, val_loss = self.__compute_metrics(
                 correct_total=correct_total,
