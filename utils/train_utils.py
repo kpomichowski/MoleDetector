@@ -173,8 +173,9 @@ def plot_save_loss_acc(
         ax.set_ylabel(axis_label)
         ax.set_title(titles[axis_index])
         ax.legend()
-
+    
     plt.show()
+
     if path_to_save_plot and os.path.exists(path_to_save_plot):
         file_name = f"{int(time.time())}_{model_name}_epoch_{epoch}_plot.png"
         fig.savefig(path_to_save_plot + file_name)
