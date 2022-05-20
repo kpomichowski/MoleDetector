@@ -128,5 +128,5 @@ class Trainer(base_trainer.BaseTrainer):
     ) -> tuple:
         acc = 100 * correct_total / total_items
         r_loss = running_loss / total_batches
-        accuracy, loss = np.round(acc, 3), np.round(r_loss)
+        accuracy, loss = np.round(acc, 3), np.round(r_loss, 3)
         return accuracy, loss
