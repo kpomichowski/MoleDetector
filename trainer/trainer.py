@@ -55,7 +55,7 @@ class Trainer(base_trainer.BaseTrainer):
             
             correct_total += correct_predicts
 
-        training_loss, training_acc = self.__compute_metrics(
+        training_acc, training_loss = self.__compute_metrics(
             correct_total=correct_total,
             running_loss=running_loss,
             total_batches=len(data_loaders.get("train")),
