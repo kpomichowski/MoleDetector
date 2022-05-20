@@ -126,6 +126,6 @@ class Trainer(base_trainer.BaseTrainer):
         total_items: int,
         total_batches: int,
     ) -> tuple:
-        acc = (100 * correct_total) / total_items
+        acc = 100 * correct_total / total_items
         r_loss = running_loss / total_batches
         return acc, r_loss
