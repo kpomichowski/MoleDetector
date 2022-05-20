@@ -1,14 +1,11 @@
 import argparse
-import torch, matplotlib.pyplot as plt
-import numpy as np
 
-from base import base_trainer
+from trainer.trainer import Trainer
 from utils.train_utils import (
     get_device,
     get_data_loaders,
     get_datasets,
     initialize_model,
-    get_sampler
 )
 
 
@@ -43,7 +40,9 @@ if __name__ == "__main__":
         help="Source path to folder that contains skin cancer images.",
     )
 
-    parser.add_argument("--model", type=str, help="Model to train and evaluate data.")
+    parser.add_argument(
+        "--model", type=str, default="vgg19", help="Model to train and evaluate data."
+    )
     parser.add_argument(
         "--batch_size", type=int, default=32, help="The size of batches in dataloader."
     )
@@ -91,7 +90,7 @@ if __name__ == "__main__":
         model=args.model,
         num_classes=7,
         feature_extraction=True,
-        progress=True,
+        show_progress=True,
         pretrained=True,
     )
 
@@ -105,14 +104,13 @@ if __name__ == "__main__":
         datasets=datasets, over_sample=args.oversample, batch_size=args.batch_size,
     )
 
-    trainer = base_trainer.BaseTrainer(
+    trainer = Trainer(
         model=model,
         scheduler=args.scheduler,
         optimizer=args.optimizer,
         lr=args.lr,
         device=device,
+        validate=True,
     )
 
-    model, metrics = trainer.train(data_loaders=data_loaders, num_epochs=args.epochs)
-
-
+    model = trainer.train(data_loaders=data_loaders, num_epochs=args.epochs)

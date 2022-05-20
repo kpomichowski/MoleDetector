@@ -1,15 +1,16 @@
 import inspect
-import numpy as np
 import time
 import torch
 import copy
+import datetime
+import abc
 
 from utils import train_utils
 from torch import optim
 from tqdm import tqdm
 
 
-class BaseTrainer:
+class BaseTrainer(metaclass=abc.ABCMeta):
 
     __schedulers = {
         "plateau": optim.lr_scheduler.ReduceLROnPlateau,
@@ -19,7 +20,7 @@ class BaseTrainer:
         "adam": optim.Adam,
     }
 
-    def __init__(self, model, device, optimizer, lr=1e-3, scheduler=None, **kwargs):
+    def __init__(self, model, device: torch.device, optimizer: str, lr: float = 1e-3, scheduler: str = None, **kwargs):
         self.model = model
         self.device = device
         self.criterion = torch.nn.CrossEntropyLoss()
@@ -28,113 +29,77 @@ class BaseTrainer:
         )
         self.scheduler = self.__init_scheduler(scheduler_name=scheduler, **kwargs)
 
-    def train(self, data_loaders, num_epochs):
-        data_loaders = copy.deepcopy(data_loaders)
-        data_loaders.pop("test")
+    def train(self, data_loaders: dict, num_epochs: int):
+        data_loaders__c = copy.deepcopy(data_loaders)
+        if 'test' in data_loaders.keys():
+            data_loaders__c.pop('test')
+        self.model.to(self.device)
         return self.__train_loop(data_loaders=data_loaders, num_epochs=num_epochs)
 
-    def __train_loop(self, data_loaders, num_epochs=25):
+    def _compute_loss(self, model_output: torch.tensor, targets: torch.tensor) -> torch.tensor:
+        return self.criterion(model_output, targets)
+
+    @abc.abstractmethod
+    def _train_one_epoch(self, data_loaders: dict, epoch: int = 1):
+        raise NotImplementedError
+
+    def __train_loop(self, data_loaders: dict, num_epochs: int = 25):
         time_start = time.time()
-        train_acc_hist, val_acc_hist = [], []
-        train_loss_hist, val_loss_hist = [], []
-        metrics = {}
-        best_acc = 0.0
-        best_model_wts = copy.deepcopy(self.model.state_dict())
-        self.model.to(self.device)
-        for epoch in tqdm(range(num_epochs)):
+
+        train_loss_history, train_acc_history = [], []
+        val_loss_history, val_acc_history = [], []
+
+        for epoch in tqdm(range(1, num_epochs + 1)):
             # logger here to add info about number of epoch
-            print("\nEpoch {}/{}".format(epoch, num_epochs - 1))
-            print("-" * 10)
+            print(f'\n[{datetime.datetime.now()}]\n\t [INFO] Current epoch: {epoch} of {num_epochs}')
 
-            for phase in ["train", "val"]:
-                if phase == "train":
-                    self.model.train()
-                else:
-                    self.model.eval()
+            train_metrics = self._train_one_epoch(data_loaders=data_loaders, epoch=epoch)
 
-                running_loss = 0
-                correct_predicts = 0
+            try:
+                training_acc, training_loss, val_acc, val_loss = train_metrics
+                do_validate = True
+            except ValueError:
+                training_acc, training_loss = train_metrics
+                do_validate = False
 
-                for batch in data_loaders.get(phase):
-
-                    inputs, targets = batch.get("input"), batch.get("target")
-
-                    inputs = inputs.to(self.device)
-                    targets = targets.to(self.device)
-
-                    # reset the parameter of gradients
-                    self.optimizer.zero_grad()
-
-                    with torch.set_grad_enabled(phase == "train"):
-                        outputs = self.model(inputs)
-                        targets_ = torch.argmax(targets, dim=1)
-                        loss = self.criterion(outputs, targets_)
-                        _, preds = torch.max(outputs, dim=1)
-
-                        if phase == "train":
-                            loss.backward()
-                            # update the parameters of model
-                            self.optimizer.step()
-
-                    # running statistics
-                    running_loss += loss.item() * inputs.size(0)
-                    correct_predicts += torch.sum(preds == targets_).cpu().detach().numpy().astype(np.float)
-
-                if phase == "train" and self.scheduler:
-                    self.scheduler.step(loss)
-
-                # epoch stats
-                epoch_loss = running_loss / len(data_loaders.get(phase))
-                epoch_acc = correct_predicts / len(data_loaders.get(phase))
-
-                # logger here for loss info and acc about training data
-                print(
-                    "{} Loss: {:.4f} Acc: {:.4f}\n".format(phase, epoch_loss, epoch_acc)
+            # store the history of train accuracy and loss
+            train_acc_history.append(training_acc)
+            train_loss_history.append(training_loss)
+            
+            # store the history of validation accuracy and loss 
+            if do_validate:
+                val_loss_history.append(val_loss)
+                val_acc_history.append(val_acc)
+            
+            # Plot for every five epochs training and validation loss/accuracy.
+            if epoch % 5 == 0:
+                self.__plot_loss_and_acc(
+                    data=(train_loss_history, val_loss_history, train_acc_history, val_acc_history),
+                    epoch=epoch,
                 )
 
-                if phase == "val" and epoch_acc > best_acc:
-                    best_acc = epoch_acc
-                    best_model_wts = copy.deepcopy(self.model.state_dict())
+        time_elapsed = time.time() - time_start
+        print(f'[{datetime.now()}]\n\t [INFO] Training complete: {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
 
-                if phase == "val":
-                    val_loss_hist.append(epoch_loss)
-                    val_acc_hist.append(epoch_acc)
-                else:
-                    train_loss_hist.append(epoch_loss)
-                    train_acc_hist.append(epoch_acc)
+        return self.model
 
-                # Plot for every five epochs training and validation loss/accuracy.
-                if epoch % 5 == 0:
-                    model_name = self.model.name
-                    train_utils.plot_save_loss_acc(
-                        model_name=model_name,
-                        data=(train_loss_hist, val_loss_hist, train_acc_hist, val_acc_hist),
-                        path_to_save_plot=f"./plots/",
-                        epoch=epoch,
-                    )
+    def eval(self, data_loaders: dict, mode: str):
+        self._eval(data_loaders=data_loaders, mode='test')
 
-            time_end = time.time() - time_start
-            # logger for time elapsed info and best acc
-            print(f"Training complete in {time_end // 60:.0f}m {time_end % 60:.0f}s")
-            print(f"Best val Acc: {best_acc:4f}")
+    @abc.abstractmethod
+    def _eval(self, data_loaders: dict, mode: str):
+        raise NotImplementedError
 
-        metrics['val'] = {'acc': val_acc_hist, 'loss': val_loss_hist}
-        metrics['train'] = {'acc': train_acc_hist, 'loss': train_loss_hist}
-
-        self.model.load_state_dict(best_model_wts)
-
-        return (
-            self.model,
-            metrics,
+    def __plot_loss_and_acc(self, data, epoch):
+        model_name = self.model.name
+        train_utils.plot_save_loss_acc(
+            model_name=model_name,
+            data=data,
+            path_to_save_plot=f"./plots/",
+            epoch=epoch,
         )
 
-    def eval(self):
-        raise NotImplementedError
-
-    def __eval(self):
-        raise NotImplementedError
-
-    def __init_scheduler(self, scheduler_name, **kwargs):
+    def __init_scheduler(self, scheduler_name: str, **kwargs):
         if scheduler_name:
             scheduler = self.__schedulers.get(scheduler_name.lower())
             scheduler_params = self.__get_kwargs_params(scheduler, **kwargs)
@@ -159,3 +124,8 @@ class BaseTrainer:
     def __get_kwargs_params(obj, **kwargs):
         object_params = list(inspect.signature(obj).parameters)
         return {k: kwargs.pop(k) for k in dict(kwargs) if k in object_params}
+
+    def _compute_acc(self, predicts: torch.Tensor, target_gt: torch.Tensor):
+        batch_len = predicts.size(0)
+        corrects = torch.sum(predicts == target_gt).sum().item()
+        return batch_len, corrects

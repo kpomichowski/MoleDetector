@@ -42,23 +42,27 @@ def get_device(gpu: bool) -> torch.device:
     return device
 
 
-def get_sampler(
-    train_dataset, oversample: bool = True
-) -> None or WeightedRandomSampler:
+def get_sampler(train_dataset, oversample: bool) -> None or WeightedRandomSampler:
+
     if not oversample:
         return None
 
     target = torch.tensor(
-        [torch.argmax(sample.get("target")) for sample in train_dataset], dtype=torch.int
+        [torch.argmax(sample.get("target")) for sample in train_dataset],
+        dtype=torch.int,
     )
+
     class_sample_count = torch.tensor(
         [(target == t).sum() for t in torch.unique(target, sorted=True)]
     )
+
     weight = 1.0 / class_sample_count.float()
     sample_weights = torch.tensor([weight[t] for t in target])
+
     sampler = WeightedRandomSampler(
         weights=sample_weights, num_samples=len(sample_weights), replacement=True
     )
+
     return sampler
 
 
@@ -189,34 +193,64 @@ def initialize_model(
     num_classes: int = 7,
     feature_extraction: bool = True,
     pretrained: bool = True,
-    progress: bool = True,
+    show_progress: bool = True,
 ):
 
     model_ft = None
     input_size = 0
 
+    model = model.lower()
+
     if model == "vgg19":
-        model_ft = models.vgg19(pretrained=pretrained, progress=progress)
+        model_ft = models.vgg19(pretrained=pretrained, progress=show_progress)
         model_ft.name = "vgg19"
         set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
+        num_features = model_ft.classifier[0].in_features
         model_ft.classifier = torch.nn.Sequential(
-            torch.nn.Linear(in_features=25088, out_features=4096, bias=True),
+            torch.nn.Linear(in_features=num_features, out_features=4096, bias=True),
             torch.nn.ReLU(),
+            torch.nn.Dropout(p=0.25),
             torch.nn.Linear(in_features=4096, out_features=1024, bias=True),
             torch.nn.ReLU(),
-            torch.nn.Linear(in_features=1024, out_features=128, bias=True),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
+            torch.nn.Dropout(p=0.5),
+            torch.nn.Linear(in_features=1024, out_features=num_classes, bias=True),
         )
         input_size = 224
     elif model == "inceptionv3":
-        ...
+        model_ft = models.inception_v3(pretrained=pretrained, progress=show_progress)
+        model_ft.name = "inceptionv3"
+        set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
+        num_features = model_ft.AuxLogits.fc.in_features
+        model_ft.AuxLogits.fc = torch.nn.Linear(
+            in_features=num_features, out_features=num_classes
+        )
+        num_features = model_ft.fc.in_features
+        model_ft.fc = torch.nn.Linear(
+            in_features=num_features, out_features=num_classes
+        )
+        input_size = 299
     elif model == "resnet50":
-        ...
-    elif model == "xception":
-        ...
+        model_ft = models.resnet50(pretrained=pretrained, progress=show_progress)
+        model_ft.name = "resnet50"
+        set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
+        num_features = model_ft.fc.in_features
+        model_ft.fc = torch.nn.Sequential(
+            torch.nn.Linear(
+                in_features=num_features, out_features=num_classes, bias=True
+            )
+        )
+        input_size = 224
     elif model == "mobilenet":
-        ...
+        model_ft = models.mobilenet_v3_large(
+            pretrained=pretrained, progress=show_progress
+        )
+        model_ft.name = "mobilenet"
+        set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
+        num_features = model_ft.classifier[0].in_features
+        model_ft.classifier[-1] = torch.nn.Linear(
+            in_features=num_features, out_features=num_classes, bias=True
+        )
+        input_size = 224
     else:
         raise RuntimeError(f"Inaproperiate model name.")
 
