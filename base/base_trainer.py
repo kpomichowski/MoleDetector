@@ -51,7 +51,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
 
         for epoch in tqdm(range(1, num_epochs + 1)):
             # logger here to add info about number of epoch
-            print(f'\n[{datetime.now()}]\n\t [INFO] Current epoch: {epoch} of {num_epochs}')
+            print(f'\n\n[{datetime.now()}]\n\n\t [INFO] Current epoch: {epoch} of {num_epochs}\n')
 
             train_metrics = self._train_one_epoch(data_loaders=data_loaders, epoch=epoch)
 
@@ -68,8 +68,8 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             
             # store the history of validation accuracy and loss 
             if do_validate:
-                val_loss_history.append(val_loss)
                 val_acc_history.append(val_acc)
+                val_loss_history.append(val_loss)
             
             # Plot for every five epochs training and validation loss/accuracy.
             if epoch % 5 == 0:

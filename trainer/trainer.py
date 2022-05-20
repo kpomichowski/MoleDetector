@@ -44,7 +44,7 @@ class Trainer(base_trainer.BaseTrainer):
                 loss = self._compute_loss(model_output=logits, targets=targets_)
 
             _, predictions = torch.max(logits, dim=1)
-            running_loss += loss.item()
+            running_loss += loss.item() * inputs.size(0)
 
             loss.backward()
             self.optimizer.step()
@@ -82,7 +82,7 @@ class Trainer(base_trainer.BaseTrainer):
     def __validate_one_epoch(self, data_loader, epoch: int) -> tuple:
         self.model.eval()
 
-        total_items, running_loss, correct_total = 0, 0, 0
+        running_loss, correct_total = 0, 0
         with torch.no_grad():
 
             for batch_index, samples in enumerate(data_loader):
@@ -96,7 +96,7 @@ class Trainer(base_trainer.BaseTrainer):
 
                 loss = self._compute_loss(model_output=logits, targets=targets_)
 
-                running_loss += loss.item()
+                running_loss += loss.item() * inputs.size(0)
                 batch_length, correct_predicts = self._compute_acc(
                     predicts=predictions, target_gt=targets_
                 )

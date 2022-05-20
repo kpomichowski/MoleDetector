@@ -2,8 +2,8 @@ import torch
 import os
 import re
 import time
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
 from dataset.data_set import LesionsDataset
 from torch.utils.data import WeightedRandomSampler, DataLoader
@@ -237,8 +237,11 @@ def initialize_model(
         num_features = model_ft.fc.in_features
         model_ft.fc = torch.nn.Sequential(
             torch.nn.Linear(
-                in_features=num_features, out_features=num_classes, bias=True
-            )
+                in_features=num_features, out_features=128, bias=True
+            ),
+            torch.nn.Dropout(p=.5),
+            torch.nn.ReLU(),
+            torch.nn.Linear(in_features=128, out_features=num_classes, bias=True)
         )
         input_size = 224
     elif model == "mobilenet":
