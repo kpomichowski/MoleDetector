@@ -51,7 +51,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
 
         for epoch in tqdm(range(1, num_epochs + 1)):
             # logger here to add info about number of epoch
-            print(f'\n\n[{datetime.now()}]\n\n\t [INFO] Current epoch: {epoch} of {num_epochs}\n')
+            print(f'\n\n[{datetime.now().isoformat(" ", "seconds")}]\n\n\t [INFO] Current epoch: {epoch} of {num_epochs}\n')
 
             train_metrics = self._train_one_epoch(data_loaders=data_loaders, epoch=epoch)
 
@@ -79,7 +79,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                 )
 
         time_elapsed = time.time() - time_start
-        print(f'[{datetime.now()}]\n\t [INFO] Training complete: {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
+        print(f'[{datetime.now().isoformat(" ", "seconds")}]\n\t [INFO] Training complete: {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
 
         return self.model
 

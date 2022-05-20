@@ -71,10 +71,10 @@ class Trainer(base_trainer.BaseTrainer):
             return training_acc, training_loss
 
         print(
-            f"[{datetime.now()}]\n\t [INFO] training epoch loss: {training_loss} | training epoch acc.: {training_acc} |"
+            f'[{datetime.now().isoformat(" ", "seconds")}]\n\t [INFO] training epoch loss: {training_loss} | training epoch acc.: {training_acc} |'
         )
         print(
-            f"[{datetime.now()}]\n\t [INFO] validation epoch loss: {val_loss} | validation epoch acc.: {val_acc} |"
+            f'[{datetime.now().isoformat(" ", "seconds")}]\n\t [INFO] validation epoch loss: {val_loss} | validation epoch acc.: {val_acc} |'
         )
 
         return training_acc, training_loss, val_acc, val_loss
