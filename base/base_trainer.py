@@ -2,9 +2,9 @@ import inspect
 import time
 import torch
 import copy
-import datetime
 import abc
 
+from datetime import datetime
 from utils import train_utils
 from torch import optim
 from tqdm import tqdm
@@ -51,7 +51,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
 
         for epoch in tqdm(range(1, num_epochs + 1)):
             # logger here to add info about number of epoch
-            print(f'\n[{datetime.datetime.now()}]\n\t [INFO] Current epoch: {epoch} of {num_epochs}')
+            print(f'\n[{datetime.now()}]\n\t [INFO] Current epoch: {epoch} of {num_epochs}')
 
             train_metrics = self._train_one_epoch(data_loaders=data_loaders, epoch=epoch)
 

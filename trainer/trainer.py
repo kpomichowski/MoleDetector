@@ -1,4 +1,3 @@
-from re import L
 import torch
 import numpy as np
 
@@ -23,7 +22,7 @@ class Trainer(base_trainer.BaseTrainer):
     def _train_one_epoch(self, data_loaders: dict, epoch: int = 1) -> tuple:
         self.model.train()
 
-        total_items, running_loss, correct_total = 0, 0, 0
+        running_loss, correct_total = 0, 0
         for batch_index, samples in enumerate(data_loaders.get("train")):
 
             inputs, targets = samples.get("input"), samples.get("target")
@@ -46,21 +45,21 @@ class Trainer(base_trainer.BaseTrainer):
 
             _, predictions = torch.max(logits, dim=1)
             running_loss += loss.item()
-            batch_length, correct_predicts = self._compute_acc(
-                predicts=predictions, target_gt=targets_
-            )
-
-            total_items += batch_length
-            correct_total += correct_predicts
 
             loss.backward()
             self.optimizer.step()
+
+            batch_length, correct_predicts = self._compute_acc(
+                predicts=predictions, target_gt=targets_
+            )
+            
+            correct_total += correct_predicts
 
         training_loss, training_acc = self.__compute_metrics(
             correct_total=correct_total,
             running_loss=running_loss,
             total_batches=len(data_loaders.get("train")),
-            total_items=total_items,
+            total_items=batch_length * len(data_loaders.get('train')),
         )
 
         if self.do_validation:
@@ -109,7 +108,7 @@ class Trainer(base_trainer.BaseTrainer):
                 correct_total=correct_total,
                 running_loss=running_loss,
                 total_batches=len(data_loader),
-                total_items=total_items,
+                total_items=batch_length * len(data_loader),
             )
 
         if self.scheduler:
@@ -129,5 +128,4 @@ class Trainer(base_trainer.BaseTrainer):
     ) -> tuple:
         acc = (100 * correct_total) / total_items
         r_loss = running_loss / total_batches
-        accuracy, loss = np.round(acc, decimals=3), np.round(r_loss, decimals=3)
-        return accuracy, loss
+        return acc, r_loss
