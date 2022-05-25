@@ -130,7 +130,7 @@ if __name__ == "__main__":
     save_model(model=model, path=MODEL_WTS_DST_PATH, epochs=args.epochs)
 
     # Evaluation of the model
-    recall, precision, accuracy, cm = trainer.eval(data_loader=data_loaders.get("test"))
+    recall, precision, accuracy, cm = trainer.eval(data_loader=data_loaders.get("test"), path='./weights/')
 
     plot_confusion_matrix(
         confusion_matrix=cm, model_name=model.name, path_to_save_plot="./plots/"
