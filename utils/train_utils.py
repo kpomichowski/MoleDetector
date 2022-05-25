@@ -212,13 +212,9 @@ def initialize_model(
         set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
         num_features = model_ft.classifier[0].in_features
         model_ft.classifier = torch.nn.Sequential(
-            torch.nn.Linear(in_features=num_features, out_features=4096, bias=True),
+            torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
-            torch.nn.Dropout(p=0.25),
-            torch.nn.Linear(in_features=4096, out_features=1024, bias=True),
-            torch.nn.ReLU(),
-            torch.nn.Dropout(p=0.5),
-            torch.nn.Linear(in_features=1024, out_features=num_classes, bias=True),
+            torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224
     elif model == "resnet34":
@@ -226,14 +222,14 @@ def initialize_model(
         model_ft.name = "resnet34"
         set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
         num_features = model_ft.fc.in_features
-        model_ft.fc = torch.nn.Linear(
-            in_features=num_features, out_features=num_classes
-        )
-        # model_ft.fc = torch.nn.Sequential(
-        #     torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
-        #     torch.nn.ReLU(),
-        #     torch.nn.Sequential(in_features=128, out_features=num_classes, bias=True),
+        # model_ft.fc = torch.nn.Linear(
+        #     in_features=num_features, out_features=num_classes
         # )
+        model_ft.fc = torch.nn.Sequential(
+            torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
+            torch.nn.ReLU(),
+            torch.nn.Sequential(in_features=128, out_features=num_classes, bias=True),
+        )
         input_size = 224
     elif model == "inceptionv3":
         model_ft = models.inception_v3(pretrained=pretrained, progress=show_progress)
@@ -253,9 +249,14 @@ def initialize_model(
         model_ft.name = "resnet50"
         set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
         num_features = model_ft.fc.in_features
+        # model_ft.fc = torch.nn.Sequential(
+        #     torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
+        #     torch.nn.Dropout(p=0.5),
+        #     torch.nn.ReLU(),
+        #     torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
+        # )
         model_ft.fc = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
-            torch.nn.Dropout(p=0.5),
             torch.nn.ReLU(),
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
