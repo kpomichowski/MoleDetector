@@ -311,6 +311,6 @@ def save_model(model, path: str, epochs: int):
         print(f"[INFO] - Saving the model...")
         model_fname = f"{model.name}_{epochs}_{int(time.time())}"
         PATH = path + model_fname + ".pth"
-        model.save(model.state_dict(), PATH)
+        torch.save(model.state_dict(), PATH)
     else:
         raise RuntimeError(f"Given path does not exist.")

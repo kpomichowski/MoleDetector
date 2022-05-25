@@ -70,13 +70,17 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         validation_loader = data_loaders.get("val")
 
         for epoch in tqdm(range(1, num_epochs + 1)):
+            
             # logger here to add info about number of epoch
             if epoch != 1:
-                print("\n", "*" * 70)
+                print("\n\n", "*" * 90)
+            else:
+                print("*" * 90)
+
             print(
                 f'\n\n[{datetime.now().isoformat(" ", "seconds")}]\n\n\t [INFO] Current epoch: {epoch} of {num_epochs}\n'
             )
-            print("\n", "*" * 70)
+            
 
             training_acc, training_loss = self._train_one_epoch(
                 data_loader=train_loader, epoch=epoch
