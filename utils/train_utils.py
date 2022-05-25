@@ -3,7 +3,9 @@ import os
 import re
 import time
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from dataset.data_set import LesionsDataset
 from torch.utils.data import WeightedRandomSampler, DataLoader
@@ -20,7 +22,9 @@ def get_transforms(input_size, mode="train"):
                 transforms.Resize(input_size),
                 transforms.RandomHorizontalFlip(p=0.65),
                 transforms.RandomVerticalFlip(p=0.65),
-                transforms.RandomRotation(degrees=(0, 90)),
+                transforms.RandomRotation(degrees=(0, 180)),
+                transforms.ColorJitter(),
+                transforms.RandomPerspective(p=0.3),
                 transforms.RandomCrop(input_size),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std, inplace=True),
@@ -173,12 +177,13 @@ def plot_save_loss_acc(
         ax.set_ylabel(axis_label)
         ax.set_title(titles[axis_index])
         ax.legend()
-    
+
     plt.show()
 
     if path_to_save_plot and os.path.exists(path_to_save_plot):
         file_name = f"{int(time.time())}_{model_name}_epoch_{epoch}_plot.png"
         fig.savefig(path_to_save_plot + file_name)
+        fig.close()
     else:
         raise RuntimeError(f'Folder "./plots" does not exist in project structure.')
 
@@ -217,6 +222,15 @@ def initialize_model(
             torch.nn.Linear(in_features=1024, out_features=num_classes, bias=True),
         )
         input_size = 224
+    elif model == "resnet34":
+        model_ft = models.resnet34(pretrained=pretrained, progress=show_progress)
+        model_ft.name = "resnet34"
+        set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
+        num_features = model_ft.fc.in_features
+        model_ft.fc = torch.nn.Linear(
+            in_features=num_features, out_features=num_classes
+        )
+        input_size = 224
     elif model == "inceptionv3":
         model_ft = models.inception_v3(pretrained=pretrained, progress=show_progress)
         model_ft.name = "inceptionv3"
@@ -236,12 +250,10 @@ def initialize_model(
         set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
         num_features = model_ft.fc.in_features
         model_ft.fc = torch.nn.Sequential(
-            torch.nn.Linear(
-                in_features=num_features, out_features=128, bias=True
-            ),
-            torch.nn.Dropout(p=.5),
+            torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
+            torch.nn.Dropout(p=0.5),
             torch.nn.ReLU(),
-            torch.nn.Linear(in_features=128, out_features=num_classes, bias=True)
+            torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224
     elif model == "mobilenet":
@@ -259,3 +271,42 @@ def initialize_model(
         raise RuntimeError(f"Inaproperiate model name.")
 
     return model_ft, input_size
+
+
+def plot_confusion_matrix(
+    confusion_matrix, model_name: str, path_to_save_plot: str = None
+):
+    fig = plt.figure(figsize=(15, 10))
+
+    class_labels = ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
+
+    df_cm = pd.DataFrame(confusion_matrix, index=class_labels, columns=class_labels)
+    heatmap = sns.heatmap(df_cm, annot=True, fmt="d")
+
+    heatmap.yaxis.set_ticklabels(
+        heatmap.yaxis.get_ticklabels(), rotation=0, ha="right", fontsize=15
+    )
+    heatmap.xaxis.set_ticklabels(
+        heatmap.xaxis.get_ticklabels(), rotation=45, ha="right", fontsize=15
+    )
+
+    plt.ylabel("True label")
+    plt.xlabel("Predicted label")
+    plt.show()
+
+    if path_to_save_plot and os.path.exists(path_to_save_plot):
+        fname = f"{int(time.time())}_cm_{model_name}_test"
+        fig.savefig(path_to_save_plot + fname)
+        fig.close()
+    else:
+        raise RuntimeError(f'Folder "./plots" does not exist in project structure.')
+
+
+def save_model(model, path: str, epochs: int):
+    if os.path.exists(path=path):
+        print(f"[INFO] - Saving the model...")
+        model_fname = f"{model.name}_{epochs}_{int(time.time())}"
+        PATH = path + model_fname + ".pth"
+        model.save(model.state_dict(), PATH)
+    else:
+        raise RuntimeError(f"Given path does not exist.")

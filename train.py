@@ -1,4 +1,6 @@
 import argparse
+import os
+import time
 
 from trainer.trainer import Trainer
 from utils.train_utils import (
@@ -6,10 +8,14 @@ from utils.train_utils import (
     get_data_loaders,
     get_datasets,
     initialize_model,
+    save_model,
+    plot_confusion_matrix,
 )
 
 
 if __name__ == "__main__":
+
+    MODEL_WTS_DST_PATH = "./model_weights/"
 
     parser = argparse.ArgumentParser(
         description="Training models for skin cancer detection."
@@ -73,7 +79,9 @@ if __name__ == "__main__":
         default="plateau",
         help="Scheduler name to change the value of learning rate.\nAvailable schedulers: `plateau`.",
     )
-
+    parser.add_argument(
+        "--patience", type=int, default=5, help="Patience for ReduceLROnPlateau"
+    )
     args = parser.parse_args()
 
     """
@@ -94,6 +102,9 @@ if __name__ == "__main__":
         pretrained=True,
     )
 
+    model_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"[INFO] Total parameters of the model: {model_total_params}")
+
     datasets = get_datasets(
         path_to_csv=args.csv,
         path_to_image_folder=args.image_folder,
@@ -111,6 +122,16 @@ if __name__ == "__main__":
         lr=args.lr,
         device=device,
         validate=True,
+        patience=args.patience,
     )
 
     model = trainer.train(data_loaders=data_loaders, num_epochs=args.epochs)
+
+    save_model(model=model, path=MODEL_WTS_DST_PATH, epochs=args.epochs)
+
+    # Evaluation of the model
+    recall, precision, accuracy, cm = trainer.eval(data_loader=data_loaders.get("test"))
+
+    plot_confusion_matrix(
+        confusion_matrix=cm, model_name=model.name, path_to_save_plot="./plots/"
+    )
