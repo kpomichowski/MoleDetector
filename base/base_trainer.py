@@ -1,4 +1,5 @@
 import inspect
+from operator import is_
 import time
 import torch
 import copy
@@ -25,13 +26,14 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         model,
         device: torch.device,
         optimizer: str,
+        weighted_loss: bool,
         lr: float = 1e-3,
         scheduler: str = None,
         **kwargs,
     ):
         self.model = model
         self.device = device
-        self.criterion = torch.nn.CrossEntropyLoss()
+        self.criterion = self.__init_loss(is_weighted=weighted_loss)
         self.optimizer = self.__init_optimizer(
             optimizer_name=optimizer, lr=lr, **kwargs
         )
@@ -75,7 +77,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             if epoch != 1:
                 print("\n\n", "*" * 90)
             else:
-                print("*" * 90)
+                print("\n", "*" * 90)
 
             print(
                 f'\n\n[{datetime.now().isoformat(" ", "seconds")}]\n\n\t [INFO] Current epoch: {epoch} of {num_epochs}\n'
@@ -122,12 +124,12 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         self.model.load_state_dict(best_model_weights)
         return self.model
 
-    def eval(self, data_loader: dict, mode: str):
+    def eval(self, data_loader: dict):
         self.model.to(self.device)
-        self._eval(data_loaders=data_loader, mode="test")
+        self._eval(data_loaders=data_loader)
 
     @abc.abstractmethod
-    def _eval(self, data_loaders: dict, mode: str):
+    def _eval(self, data_loader: dict):
         raise NotImplementedError
 
     def __plot_loss_and_acc(self, data, epoch):
@@ -139,6 +141,18 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             epoch=epoch,
         )
 
+    def __init_loss(self, is_weighted: bool):
+        if is_weighted:
+            num_samples = [ 116,  122,  321,   32,  176, 3162,   40 ]
+            normed_weights = [1 - (x / torch.sum(num_samples)) for x in num_samples]
+            normed_weights = torch.FloatTensor(normed_weights).to(self.device)
+            criterion = torch.nn.CrossEntropyLoss(weight=normed_weights)
+        else:
+            criterion = torch.nn.CrossEntropyLoss()
+        
+        return criterion
+        
+
     def __init_scheduler(self, scheduler_name: str, **kwargs):
         if scheduler_name:
             scheduler = self.__schedulers.get(scheduler_name.lower())
@@ -149,7 +163,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                 self.optimizer,
                 verbose=True,
                 factor=scheduler_params.pop("factor", 0.5),
-                patience=scheduler_params.pop("patience", 10),
+                patience=scheduler_params.pop("patience", 5),
                 **scheduler_params,
             )
 

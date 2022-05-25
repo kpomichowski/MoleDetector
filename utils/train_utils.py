@@ -46,6 +46,7 @@ def get_device(gpu: bool) -> torch.device:
     return device
 
 
+
 def get_sampler(train_dataset, oversample: bool) -> None or WeightedRandomSampler:
 
     if not oversample:
@@ -59,6 +60,8 @@ def get_sampler(train_dataset, oversample: bool) -> None or WeightedRandomSample
     class_sample_count = torch.tensor(
         [(target == t).sum() for t in torch.unique(target, sorted=True)]
     )
+
+    print(class_sample_count)
 
     weight = 1.0 / class_sample_count.float()
     sample_weights = torch.tensor([weight[t] for t in target])
@@ -222,9 +225,6 @@ def initialize_model(
         model_ft.name = "resnet34"
         set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
         num_features = model_ft.fc.in_features
-        # model_ft.fc = torch.nn.Linear(
-        #     in_features=num_features, out_features=num_classes
-        # )
         model_ft.fc = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
@@ -249,15 +249,10 @@ def initialize_model(
         model_ft.name = "resnet50"
         set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
         num_features = model_ft.fc.in_features
-        # model_ft.fc = torch.nn.Sequential(
-        #     torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
-        #     torch.nn.Dropout(p=0.5),
-        #     torch.nn.ReLU(),
-        #     torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
-        # )
         model_ft.fc = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
+            torch.nn.Dropout(p=.2),
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224

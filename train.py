@@ -1,6 +1,4 @@
 import argparse
-import os
-import time
 
 from trainer.trainer import Trainer
 from utils.train_utils import (
@@ -79,9 +77,19 @@ if __name__ == "__main__":
         default="plateau",
         help="Scheduler name to change the value of learning rate.\nAvailable schedulers: `plateau`.",
     )
+
     parser.add_argument(
-        "--patience", type=int, default=5, help="Patience for ReduceLROnPlateau"
+        "--patience", type=int, default=5, help="Patience for ReduceLROnPlateau."
     )
+
+    parser.add_argument(
+        '--weighted_loss',  action='store_true', help='Use weights for CrossEntropyLoss.'
+    )
+    
+    parser.add_argument(
+        '--no-weighted_loss', action='store_false', dest='weighted_loss', help='Loss will be applied with no additional weights.'
+    )
+
     args = parser.parse_args()
 
     """
@@ -120,9 +128,10 @@ if __name__ == "__main__":
         scheduler=args.scheduler,
         optimizer=args.optimizer,
         lr=args.lr,
+        patience=args.patience,
+        weighted_loss=args.weighted_loss,
         device=device,
         validate=True,
-        patience=args.patience,
     )
 
     model = trainer.train(data_loaders=data_loaders, num_epochs=args.epochs)
@@ -130,7 +139,7 @@ if __name__ == "__main__":
     save_model(model=model, path=MODEL_WTS_DST_PATH, epochs=args.epochs)
 
     # Evaluation of the model
-    recall, precision, accuracy, cm = trainer.eval(data_loader=data_loaders.get("test"), path='./model_weights/')
+    recall, precision, accuracy, cm = trainer.eval(data_loader=data_loaders.get("test"))
 
     plot_confusion_matrix(
         confusion_matrix=cm, model_name=model.name, path_to_save_plot="./plots/"
