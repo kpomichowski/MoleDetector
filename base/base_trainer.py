@@ -72,7 +72,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         for epoch in tqdm(range(1, num_epochs + 1)):
             # logger here to add info about number of epoch
             if epoch != 1:
-                print("*" * 70)
+                print("\n\n*" * 70)
             print(
                 f'\n\n[{datetime.now().isoformat(" ", "seconds")}]\n\n\t [INFO] Current epoch: {epoch} of {num_epochs}\n'
             )

@@ -183,7 +183,6 @@ def plot_save_loss_acc(
     if path_to_save_plot and os.path.exists(path_to_save_plot):
         file_name = f"{int(time.time())}_{model_name}_epoch_{epoch}_plot.png"
         fig.savefig(path_to_save_plot + file_name)
-        fig.close()
     else:
         raise RuntimeError(f'Folder "./plots" does not exist in project structure.')
 
@@ -230,6 +229,11 @@ def initialize_model(
         model_ft.fc = torch.nn.Linear(
             in_features=num_features, out_features=num_classes
         )
+        # model_ft.fc = torch.nn.Sequential(
+        #     torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
+        #     torch.nn.ReLU(),
+        #     torch.nn.Sequential(in_features=128, out_features=num_classes, bias=True),
+        # )
         input_size = 224
     elif model == "inceptionv3":
         model_ft = models.inception_v3(pretrained=pretrained, progress=show_progress)
@@ -297,7 +301,6 @@ def plot_confusion_matrix(
     if path_to_save_plot and os.path.exists(path_to_save_plot):
         fname = f"{int(time.time())}_cm_{model_name}_test"
         fig.savefig(path_to_save_plot + fname)
-        fig.close()
     else:
         raise RuntimeError(f'Folder "./plots" does not exist in project structure.')
 
