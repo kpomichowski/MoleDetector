@@ -46,7 +46,6 @@ def get_device(gpu: bool) -> torch.device:
     return device
 
 
-
 def get_sampler(train_dataset, oversample: bool) -> None or WeightedRandomSampler:
 
     if not oversample:
@@ -79,17 +78,17 @@ def get_data_loaders(
 
     for mode in modes:
         dataset = datasets.get(mode)
-        shuffle=True
+        shuffle = True
         if mode != "train":
             over_sample = False
-            shuffle=False
+            shuffle = False
         loader = DataLoader(
             dataset,
             batch_size=batch_size,
             num_workers=0,
             drop_last=True,
             sampler=get_sampler(dataset, over_sample),
-            shuffle=shuffle
+            shuffle=shuffle,
         )
 
         loaders[mode] = loader
@@ -253,7 +252,7 @@ def initialize_model(
         model_ft.fc = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
-            torch.nn.Dropout(p=.2),
+            torch.nn.Dropout(p=0.2),
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224
@@ -317,15 +316,15 @@ def plot_metrics(
 ):
     fig = plt.figure(figsize=(15, 10))
     sns.barplot(
-        ['Accuracy', 'Precision', 'Recall', 'F1 score'],
-        [accuracy, precision, recall, f1_score]
+        ["Accuracy", "Precision", "Recall", "F1 score"],
+        [accuracy, precision, recall, f1_score],
     )
-    plt.ylabel('Scores')
-    plt.xlabel('Metrics')
+    plt.ylabel("Scores")
+    plt.xlabel("Metrics")
     plt.show()
 
     if path_to_save_plot and os.path.exists(path_to_save_plot):
-        fname = f'{int(time.time())}_metrics_{model_name}_test.png'
+        fname = f"{int(time.time())}_metrics_{model_name}_test.png"
         fig.savefig(path_to_save_plot + fname)
     else:
         raise RuntimeError(f'Folder "./plots" does not exist in project structure.')

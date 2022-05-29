@@ -71,7 +71,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         validation_loader = data_loaders.get("val")
 
         for epoch in tqdm(range(1, num_epochs + 1)):
-            
+
             # logger here to add info about number of epoch
             if epoch != 1:
                 print("\n\n", "*" * 90)
@@ -81,7 +81,6 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             print(
                 f'\n\n[{datetime.now().isoformat(" ", "seconds")}]\n\n\t [INFO] Current epoch: {epoch} of {num_epochs}\n'
             )
-            
 
             training_acc, training_loss = self._train_one_epoch(
                 data_loader=train_loader, epoch=epoch
@@ -142,15 +141,14 @@ class BaseTrainer(metaclass=abc.ABCMeta):
 
     def __init_loss(self, is_weighted: bool):
         if is_weighted:
-            num_samples = [ 116,  122,  321,   32,  176, 3162,   40 ]
+            num_samples = [116, 122, 321, 32, 176, 3162, 40]
             normed_weights = [1 - (x / sum(num_samples)) for x in num_samples]
             normed_weights = torch.FloatTensor(normed_weights).to(self.device)
             criterion = torch.nn.CrossEntropyLoss(weight=normed_weights)
         else:
             criterion = torch.nn.CrossEntropyLoss()
-        
+
         return criterion
-        
 
     def __init_scheduler(self, scheduler_name: str, **kwargs):
         if scheduler_name:

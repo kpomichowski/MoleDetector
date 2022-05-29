@@ -130,7 +130,7 @@ class Trainer(base_trainer.BaseTrainer):
                     confusion_matrix[target.long(), prediction.long()] += 1
 
                 batch_length, correct_predicts = self._compute_acc(
-                    predicts=predictions.cpu().numpy(), target_gt=targets_.cpu().numpy()
+                    predicts=predictions, target_gt=targets_
                 )
 
                 correct_total += correct_predicts

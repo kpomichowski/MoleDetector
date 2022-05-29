@@ -84,11 +84,14 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        '--weighted_loss',  action='store_true', help='Use weights for CrossEntropyLoss.'
+        "--weighted_loss", action="store_true", help="Use weights for CrossEntropyLoss."
     )
-    
+
     parser.add_argument(
-        '--no-weighted_loss', action='store_false', dest='weighted_loss', help='Loss will be applied with no additional weights.'
+        "--no-weighted_loss",
+        action="store_false",
+        dest="weighted_loss",
+        help="Loss will be applied with no additional weights.",
     )
 
     args = parser.parse_args()
@@ -140,10 +143,19 @@ if __name__ == "__main__":
     save_model(model=model, path=MODEL_WTS_DST_PATH, epochs=args.epochs)
 
     # Evaluation of the model
-    recall, precision, accuracy, F1_score, cm = trainer.eval(data_loader=data_loaders.get("test"))
+    recall, precision, accuracy, F1_score, cm = trainer.eval(
+        data_loader=data_loaders.get("test")
+    )
 
     plot_confusion_matrix(
         confusion_matrix=cm, model_name=model.name, path_to_save_plot="./plots/"
     )
 
-    plot_metrics(accuracy=accuracy, precision=precision, recall=recall, f1_score=F1_score, path_to_save_plot="./plots/")
+    plot_metrics(
+        accuracy=accuracy,
+        precision=precision,
+        recall=recall,
+        f1_score=F1_score,
+        model_name=model.name,
+        path_to_save_plot="./plots/",
+    )
