@@ -146,7 +146,7 @@ class Trainer(base_trainer.BaseTrainer):
 
         recall = TP / (TP + FN)
         precision = TP / (TP + FP)
-        F1_score = 2 * (precision * recall) / (precision + recall)
+        F1_score = TP / (TP + .5 * (FP + FN))
         accuracy = (TP + TN) / (TP + FP + FN + TN)
 
         print(f"Confusion matrix:\n", confusion_matrix)
