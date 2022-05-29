@@ -218,17 +218,20 @@ def initialize_model(
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224
-    elif model == "resnet34":
-        model_ft = models.resnet34(pretrained=pretrained, progress=show_progress)
-        model_ft.name = "resnet34"
+    elif model == "densenet121":
+        model_ft = models.densenet121(pretrained=True, progress=True)
+        model_ft.name = 'densenet121'
         set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
-        num_features = model_ft.fc.in_features
-        model_ft.fc = torch.nn.Sequential(
+        num_features = model_ft.classifier.in_features
+        model_ft.classifier = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
-            torch.nn.Sequential(in_features=128, out_features=num_classes, bias=True),
+            torch.nn.Dropout(p=.2),
+            torch.nn.Linear(in_features=128, out_features=7, bias=True),
         )
-        input_size = 224
+
+        input_size=224
+        
     elif model == "inceptionv3":
         model_ft = models.inception_v3(pretrained=pretrained, progress=show_progress)
         model_ft.name = "inceptionv3"
@@ -254,17 +257,6 @@ def initialize_model(
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224
-    elif model == "mobilenet":
-        model_ft = models.mobilenet_v3_large(
-            pretrained=pretrained, progress=show_progress
-        )
-        model_ft.name = "mobilenet"
-        set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
-        num_features = model_ft.classifier[0].in_features
-        model_ft.classifier[-1] = torch.nn.Linear(
-            in_features=num_features, out_features=num_classes, bias=True
-        )
-        input_size = 224
     else:
         raise RuntimeError(f"Inaproperiate model name.")
 
@@ -278,12 +270,15 @@ def plot_confusion_matrix(
 
     class_labels = ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
 
-    df_cm = pd.DataFrame(confusion_matrix, index=class_labels, columns=class_labels)
+    df_cm = pd.DataFrame(
+        confusion_matrix.astype(int), index=class_labels, columns=class_labels
+    )
     heatmap = sns.heatmap(df_cm, annot=True, fmt="d")
 
     heatmap.yaxis.set_ticklabels(
         heatmap.yaxis.get_ticklabels(), rotation=0, ha="right", fontsize=15
     )
+
     heatmap.xaxis.set_ticklabels(
         heatmap.xaxis.get_ticklabels(), rotation=45, ha="right", fontsize=15
     )
@@ -313,10 +308,11 @@ def plot_metrics(
     accuracy, precision, recall, f1_score, path_to_save_plot: str, model_name: str
 ):
     fig = plt.figure(figsize=(15, 10))
-    sns.barplot(
-        ["Accuracy", "Precision", "Recall", "F1 score"],
-        [accuracy, precision, recall, f1_score],
-    )
+    data = {
+        "metrics": ["Accuracy", "Precision", "Recall", "F1 score",],
+        "scores": [accuracy, precision, recall, f1_score],
+    }
+    sns.barplot(x="metrics", y="scores", data=data)
     plt.ylabel("Scores")
     plt.xlabel("Metrics")
     plt.show()

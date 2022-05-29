@@ -16,7 +16,9 @@ class LesionsDataset(Dataset):
         transform (callable, optional): Optional transform to be applied on sample.
     """
 
-    def __init__(self, csv_filepath: str, root_dir: str, transform=None, transform_target=None):
+    def __init__(
+        self, csv_filepath: str, root_dir: str, transform=None, transform_target=None
+    ):
         self.lesion_dataset = pd.read_csv(csv_filepath, index_col=0)
         self.root_dir = root_dir
         self.transform = transform

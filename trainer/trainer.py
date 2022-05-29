@@ -137,7 +137,7 @@ class Trainer(base_trainer.BaseTrainer):
 
         TP = np.diag(confusion_matrix)
         FP = np.sum(confusion_matrix, axis=0) - TP
-        FN = np.sum(confusion_matrix, axis = 1) - TP
+        FN = np.sum(confusion_matrix, axis=1) - TP
         TN = []
         for i in range(num_classes):
             temp = np.delete(confusion_matrix, i, axis=0)
@@ -146,25 +146,28 @@ class Trainer(base_trainer.BaseTrainer):
 
         recall = TP / (TP + FN)
         precision = TP / (TP + FP)
-        F1_score = TP / (TP + .5 * (FP + FN))
+        F1_score = TP / (TP + 0.5 * (FP + FN))
         accuracy = (TP + TN) / (TP + FP + FN + TN)
 
         print(f"Confusion matrix:\n", confusion_matrix)
-        print(f'Per class acc.: {accuracy}')
-        print(f'Per class precision: {precision}')
-        print(f'Per class recall: {recall}')
-        print(f'Per class F1 score: {F1_score}')
+        print(f"Per class acc.: {accuracy}")
+        print(f"Per class precision: {precision}")
+        print(f"Per class recall: {recall}")
+        print(f"Per class F1 score: {F1_score}")
         print(f"\nAvg precision on test data set:", np.mean(precision))
         print(f"\nAvg recall on test data set:", np.mean(recall))
-        
+        print(f"\nAvg F1 score: {np.mean(F1_score)}")
 
-        return recall, precision, accuracy, F1_score, confusion_matrix
+        return (
+            np.mean(recall),
+            np.mean(precision),
+            np.mean(accuracy),
+            np.mean(F1_score),
+            confusion_matrix,
+        )
 
     def __compute_metrics(
-        self,
-        correct_total: int,
-        running_loss: float,
-        total_items: int,
+        self, correct_total: int, running_loss: float, total_items: int,
     ) -> tuple:
         acc = 100 * correct_total / total_items
         r_loss = running_loss / total_items
