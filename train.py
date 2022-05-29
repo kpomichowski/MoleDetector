@@ -6,6 +6,7 @@ from utils.train_utils import (
     get_data_loaders,
     get_datasets,
     initialize_model,
+    plot_metrics,
     save_model,
     plot_confusion_matrix,
 )
@@ -139,8 +140,10 @@ if __name__ == "__main__":
     save_model(model=model, path=MODEL_WTS_DST_PATH, epochs=args.epochs)
 
     # Evaluation of the model
-    recall, precision, accuracy, cm = trainer.eval(data_loader=data_loaders.get("test"))
+    recall, precision, accuracy, F1_score, cm = trainer.eval(data_loader=data_loaders.get("test"))
 
     plot_confusion_matrix(
         confusion_matrix=cm, model_name=model.name, path_to_save_plot="./plots/"
     )
+
+    plot_metrics(accuracy=accuracy, precision=precision, recall=recall, f1_score=F1_score, path_to_save_plot="./plots/")

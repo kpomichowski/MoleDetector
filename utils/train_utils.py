@@ -296,7 +296,7 @@ def plot_confusion_matrix(
     plt.show()
 
     if path_to_save_plot and os.path.exists(path_to_save_plot):
-        fname = f"{int(time.time())}_cm_{model_name}_test"
+        fname = f"{int(time.time())}_cm_{model_name}_test.png"
         fig.savefig(path_to_save_plot + fname)
     else:
         raise RuntimeError(f'Folder "./plots" does not exist in project structure.')
@@ -310,3 +310,22 @@ def save_model(model, path: str, epochs: int):
         torch.save(model.state_dict(), PATH)
     else:
         raise RuntimeError(f"Given path does not exist.")
+
+
+def plot_metrics(
+    accuracy, precision, recall, f1_score, path_to_save_plot: str, model_name: str
+):
+    fig = plt.figure(figsize=(15, 10))
+    sns.barplot(
+        ['Accuracy', 'Precision', 'Recall', 'F1 score'],
+        [accuracy, precision, recall, f1_score]
+    )
+    plt.ylabel('Scores')
+    plt.xlabel('Metrics')
+    plt.show()
+
+    if path_to_save_plot and os.path.exists(path_to_save_plot):
+        fname = f'{int(time.time())}_metrics_{model_name}_test.png'
+        fig.savefig(path_to_save_plot + fname)
+    else:
+        raise RuntimeError(f'Folder "./plots" does not exist in project structure.')

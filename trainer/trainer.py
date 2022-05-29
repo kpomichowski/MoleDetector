@@ -1,3 +1,4 @@
+from matplotlib.pyplot import axis
 import torch
 import numpy as np
 
@@ -114,7 +115,7 @@ class Trainer(base_trainer.BaseTrainer):
 
         self.model.eval()
         # TODO: create confusion metric, recall, precision, accuracy, auc roc.
-        confusion_matrix = torch.zeros(num_classes, num_classes)
+        confusion_matrix = np.zeros((num_classes, num_classes))
         correct_total = 0
         with torch.no_grad():
 
@@ -129,13 +130,14 @@ class Trainer(base_trainer.BaseTrainer):
                     confusion_matrix[target.long(), prediction.long()] += 1
 
                 batch_length, correct_predicts = self._compute_acc(
-                    predicts=predictions, target_gt=targets_
+                    predicts=predictions.cpu().numpy(), target_gt=targets_.cpu().numpy()
                 )
 
                 correct_total += correct_predicts
 
-        recall = torch.diag(confusion_matrix) / torch.sum(confusion_matrix, dim=1)
-        precision = torch.diag(confusion_matrix) / torch.sum(confusion_matrix, dim=0)
+        recall = np.diag(confusion_matrix) / np.sum(confusion_matrix, axis=1)
+        precision = np.diag(confusion_matrix) / np.sum(confusion_matrix, axis=0)
+        F1_score = (2 * precision * recall) / (precision + recall)
         accuracy, _ = self.__compute_metrics(
             correct_total=correct_total,
             total_items=batch_length * len(data_loader),
@@ -143,10 +145,12 @@ class Trainer(base_trainer.BaseTrainer):
         )
 
         print(f"Confusion matrix:\n", confusion_matrix)
-        print(f'Per class acc.: {confusion_matrix.diag() / confusion_matrix.sum(1)}')
-        print(f"\nAvg precision on test data set:", torch.mean(precision))
-        print(f"\nAvg recall on test data set:", torch.mean(recall))
-        return recall, precision, accuracy, confusion_matrix
+        print(f'Per class acc.: {np.diag(confusion_matrix) / np.sum(confusion_matrix, axis=1)}')
+        print(f"\nAvg precision on test data set:", np.mean(precision))
+        print(f"\nAvg recall on test data set:", np.mean(recall))
+        print(f'F1 score: {F1_score}')
+
+        return recall, precision, accuracy, F1_score, confusion_matrix
 
     def __compute_metrics(
         self,
