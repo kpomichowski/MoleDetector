@@ -1,5 +1,4 @@
 import inspect
-from operator import is_
 import time
 import torch
 import copy
@@ -126,7 +125,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
 
     def eval(self, data_loader: dict):
         self.model.to(self.device)
-        self._eval(data_loaders=data_loader)
+        self._eval(data_loader=data_loader)
 
     @abc.abstractmethod
     def _eval(self, data_loader: dict):
@@ -144,7 +143,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
     def __init_loss(self, is_weighted: bool):
         if is_weighted:
             num_samples = [ 116,  122,  321,   32,  176, 3162,   40 ]
-            normed_weights = [1 - (x / torch.sum(num_samples)) for x in num_samples]
+            normed_weights = [1 - (x / sum(num_samples)) for x in num_samples]
             normed_weights = torch.FloatTensor(normed_weights).to(self.device)
             criterion = torch.nn.CrossEntropyLoss(weight=normed_weights)
         else:

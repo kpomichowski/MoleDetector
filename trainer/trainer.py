@@ -60,7 +60,6 @@ class Trainer(base_trainer.BaseTrainer):
         training_acc, training_loss = self.__compute_metrics(
             correct_total=correct_total,
             running_loss=running_loss,
-            total_batches=len(data_loader),
             total_items=batch_length * len(data_loader),
         )
 
@@ -99,7 +98,6 @@ class Trainer(base_trainer.BaseTrainer):
             val_acc, val_loss = self.__compute_metrics(
                 correct_total=correct_total,
                 running_loss=running_loss,
-                total_batches=len(data_loader),
                 total_items=batch_length * len(data_loader),
             )
 
@@ -116,18 +114,18 @@ class Trainer(base_trainer.BaseTrainer):
 
         self.model.eval()
         # TODO: create confusion metric, recall, precision, accuracy, auc roc.
-        confusion_matrix = torch.zeros((num_classes, num_classes))
+        confusion_matrix = torch.zeros(num_classes, num_classes)
         correct_total = 0
         with torch.no_grad():
 
             for samples in data_loader:
                 inputs, targets = samples.get("input"), samples.get("target")
                 inputs, targets = inputs.to(self.device), targets.to(self.device)
-                outputs = self.model()
+                outputs = self.model(inputs)
                 targets_ = torch.argmax(targets, dim=1)
                 _, predictions = torch.max(outputs, dim=1)
 
-                for target, prediction in zip(targets.view(-1), predictions.view(-1)):
+                for target, prediction in zip(targets_.view(-1), predictions.view(-1)):
                     confusion_matrix[target.long(), prediction.long()] += 1
 
                 batch_length, correct_predicts = self._compute_acc(
@@ -141,12 +139,13 @@ class Trainer(base_trainer.BaseTrainer):
         accuracy, _ = self.__compute_metrics(
             correct_total=correct_total,
             total_items=batch_length * len(data_loader),
-            total_batches=batch_length,
             running_loss=0,
         )
+
         print(f"Confusion matrix:\n", confusion_matrix)
-        print(f"Avg precision on test data set:", torch.mean(precision))
-        print(f"Avg recall on test data set:", torch.mean(recall))
+        print(f'Per class acc.: {confusion_matrix.diag() / confusion_matrix.sum(1)}')
+        print(f"\nAvg precision on test data set:", torch.mean(precision))
+        print(f"\nAvg recall on test data set:", torch.mean(recall))
         return recall, precision, accuracy, confusion_matrix
 
     def __compute_metrics(
@@ -154,9 +153,8 @@ class Trainer(base_trainer.BaseTrainer):
         correct_total: int,
         running_loss: float,
         total_items: int,
-        total_batches: int,
     ) -> tuple:
         acc = 100 * correct_total / total_items
-        r_loss = running_loss / total_batches
+        r_loss = running_loss / total_items
         accuracy, loss = np.round(acc, 3), np.round(r_loss, 3)
         return accuracy, loss

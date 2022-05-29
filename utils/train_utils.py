@@ -61,8 +61,6 @@ def get_sampler(train_dataset, oversample: bool) -> None or WeightedRandomSample
         [(target == t).sum() for t in torch.unique(target, sorted=True)]
     )
 
-    print(class_sample_count)
-
     weight = 1.0 / class_sample_count.float()
     sample_weights = torch.tensor([weight[t] for t in target])
 
@@ -81,14 +79,17 @@ def get_data_loaders(
 
     for mode in modes:
         dataset = datasets.get(mode)
+        shuffle=True
         if mode != "train":
             over_sample = False
+            shuffle=False
         loader = DataLoader(
             dataset,
             batch_size=batch_size,
             num_workers=0,
             drop_last=True,
             sampler=get_sampler(dataset, over_sample),
+            shuffle=shuffle
         )
 
         loaders[mode] = loader
