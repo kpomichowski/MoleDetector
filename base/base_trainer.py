@@ -124,7 +124,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
 
     def eval(self, data_loader: dict):
         self.model.to(self.device)
-        self._eval(data_loader=data_loader)
+        return self._eval(data_loader=data_loader)
 
     @abc.abstractmethod
     def _eval(self, data_loader: dict):

@@ -78,17 +78,15 @@ def get_data_loaders(
 
     for mode in modes:
         dataset = datasets.get(mode)
-        shuffle = True
         if mode != "train":
             over_sample = False
-            shuffle = False
+
         loader = DataLoader(
             dataset,
             batch_size=batch_size,
             num_workers=0,
             drop_last=True,
             sampler=get_sampler(dataset, over_sample),
-            shuffle=shuffle,
         )
 
         loaders[mode] = loader
