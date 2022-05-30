@@ -94,6 +94,19 @@ if __name__ == "__main__":
         help="Loss will be applied with no additional weights.",
     )
 
+    parser.add_argument(
+        "--unique",
+        action="store_true",
+        help="Load datasets with the unique lesion IDs."
+    )
+
+    parser.add_argument(
+        "--no-unique",
+        action="store_false",
+        dest="unique",
+        help="Dataset will be filled with the repetetive mole lesions."
+    )
+
     args = parser.parse_args()
 
     """
@@ -123,8 +136,9 @@ if __name__ == "__main__":
         path_to_csv=args.csv,
         path_to_image_folder=args.image_folder,
         input_size=input_size,
+        unique=args.unique,
     )
-
+    
     data_loaders = get_data_loaders(
         datasets=datasets, over_sample=args.oversample, batch_size=args.batch_size,
     )
@@ -160,7 +174,7 @@ if __name__ == "__main__":
         path_to_save_plot="./plots/",
         metric_type='avg',
     )
-    
+
     plot_metrics(
         metrics=model_metrics,
         model_name=model.name,

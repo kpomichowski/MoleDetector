@@ -95,7 +95,7 @@ def get_data_loaders(
 
 
 def get_datasets(
-    path_to_csv: str, path_to_image_folder: str, input_size: int = 224
+    path_to_csv: str, path_to_image_folder: str, unique: bool, input_size: int = 224
 ) -> dict:
     datasets = {}
     if not os.path.exists(path_to_csv):
@@ -105,12 +105,15 @@ def get_datasets(
         file_names = os.listdir(path)
         return (file_name for file_name in file_names if file_name.endswith(suffix))
 
-    pattern = r"\w+(train|test|val).csv"
+    
+    pattern = r"\w+(train|test|val).csv" if unique else r"\w+(train|test|val)_org.csv"
+
     prog = re.compile(pattern, re.IGNORECASE)
     for csv_file in find_csv_filenames(path=path_to_csv):
         match = prog.match(csv_file)
         if match:
             csv_file_name = match.group(0)
+            print(csv_file_name)
             try:
                 mode = csv_file_name.split(".")[0].split("_")[-1]
                 csv_path = path_to_csv + "/" + csv_file_name
