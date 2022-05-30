@@ -320,12 +320,17 @@ def plot_metrics(
         plt.ylabel("Scores")
         plt.xlabel("Metrics")
     elif metric_type == 'per_class':
-        metrics = metrics.get(metric_type)
+        metrics_scores = np.vstack(metrics.get(metric_type))
         metrics = ["Accuracy", "Precision", "Recall", "F1 score"]
         class_labels = ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
+        scores = []
+        for l_index in range(len(class_labels)):
+            for m_index in range(len(metrics)):
+                scores.append([class_labels[l_index], metrics[m_index], metrics_scores[m_index, l_index]])
+        df = pd.DataFrame(scores, columns=['Mole Type', 'Metric', 'Score'])
+        sns.barplot(data=df, x='Mole Type', y='Score', hue='Metric')
 
     plt.show()
-
     if path_to_save_plot and os.path.exists(path_to_save_plot):
         fname = f"{int(time.time())}_metrics_{model_name}_test_{metric_type}.png"
         fig.savefig(path_to_save_plot + fname)

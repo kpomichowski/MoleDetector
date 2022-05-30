@@ -153,14 +153,14 @@ if __name__ == "__main__":
         confusion_matrix=model_metrics.get('cm'), model_name=model.name, path_to_save_plot="./plots/"
     )
     print(model_metrics.get('per_class'))
+
     plot_metrics(
         metrics=model_metrics,
         model_name=model.name,
         path_to_save_plot="./plots/",
         metric_type='avg',
     )
-
-
+    
     plot_metrics(
         metrics=model_metrics,
         model_name=model.name,
