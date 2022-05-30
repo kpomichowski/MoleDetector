@@ -24,7 +24,7 @@ def get_transforms(input_size, mode="train"):
                 transforms.RandomVerticalFlip(p=0.65),
                 transforms.RandomRotation(degrees=(0, 180)),
                 transforms.ColorJitter(),
-                transforms.RandomPerspective(p=0.3),
+                transforms.RandomPerspective(p=.5),
                 transforms.RandomCrop(input_size),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std, inplace=True),
@@ -226,12 +226,11 @@ def initialize_model(
         model_ft.classifier = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
-            torch.nn.Dropout(p=.2),
             torch.nn.Linear(in_features=128, out_features=7, bias=True),
         )
 
         input_size=224
-        
+
     elif model == "inceptionv3":
         model_ft = models.inception_v3(pretrained=pretrained, progress=show_progress)
         model_ft.name = "inceptionv3"
@@ -305,20 +304,32 @@ def save_model(model, path: str, epochs: int):
 
 
 def plot_metrics(
-    accuracy, precision, recall, f1_score, path_to_save_plot: str, model_name: str
+    metrics: dict, path_to_save_plot: str, model_name: str, metric_type: str
 ):
     fig = plt.figure(figsize=(15, 10))
-    data = {
-        "metrics": ["Accuracy", "Precision", "Recall", "F1 score",],
-        "scores": [accuracy, precision, recall, f1_score],
-    }
-    sns.barplot(x="metrics", y="scores", data=data)
-    plt.ylabel("Scores")
-    plt.xlabel("Metrics")
+    if metric_type not in metrics.keys():
+        raise RuntimeError('Inaproperiate metric type.')
+    if metric_type == 'avg':
+        metrics = metrics.get(metric_type)
+        data = {
+            "metrics": ["Accuracy", "Precision", "Recall", "F1 score",],
+            "scores": [metrics[-2], metrics[1], metrics[0], metrics[-1]],
+        }
+        sns.barplot(x="metrics", y="scores", data=data)
+        plt.title('Average metrics for all classes')
+        plt.ylabel("Scores")
+        plt.xlabel("Metrics")
+    elif metric_type == 'per_class':
+        metrics = metrics.get(metric_type)
+        metrics = ["Accuracy", "Precision", "Recall", "F1 score"]
+        class_labels = ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
+
     plt.show()
 
     if path_to_save_plot and os.path.exists(path_to_save_plot):
-        fname = f"{int(time.time())}_metrics_{model_name}_test.png"
+        fname = f"{int(time.time())}_metrics_{model_name}_test_{metric_type}.png"
         fig.savefig(path_to_save_plot + fname)
     else:
         raise RuntimeError(f'Folder "./plots" does not exist in project structure.')
+
+

@@ -114,8 +114,10 @@ if __name__ == "__main__":
         pretrained=True,
     )
 
-    model_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"[INFO] Total parameters of the model: {model_total_params}")
+    model_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    model_total_params = sum(p.numel() for p in model.parameters() if not p.requires_grad)
+    print(f"[INFO] Total trainable parameters of the model {model.name}: {model_trainable_params}")
+    print(f'[INFO] Total non trainable parameters of the model {model.name}: {model_total_params}')
 
     datasets = get_datasets(
         path_to_csv=args.csv,
@@ -143,19 +145,25 @@ if __name__ == "__main__":
     save_model(model=model, path=MODEL_WTS_DST_PATH, epochs=args.epochs)
 
     # Evaluation of the model
-    recall, precision, accuracy, F1_score, cm = trainer.eval(
+    model_metrics = trainer.eval(
         data_loader=data_loaders.get("test")
     )
-
+    print(model_metrics)
     plot_confusion_matrix(
-        confusion_matrix=cm, model_name=model.name, path_to_save_plot="./plots/"
+        confusion_matrix=model_metrics.get('cm'), model_name=model.name, path_to_save_plot="./plots/"
     )
-
+    print(model_metrics.get('per_class'))
     plot_metrics(
-        accuracy=accuracy,
-        precision=precision,
-        recall=recall,
-        f1_score=F1_score,
+        metrics=model_metrics,
         model_name=model.name,
         path_to_save_plot="./plots/",
+        metric_type='avg',
+    )
+
+
+    plot_metrics(
+        metrics=model_metrics,
+        model_name=model.name,
+        path_to_save_plot="./plots/",
+        metric_type='per_class',
     )

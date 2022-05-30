@@ -158,13 +158,13 @@ class Trainer(base_trainer.BaseTrainer):
         print(f"\nAvg recall on test data set:", np.mean(recall))
         print(f"\nAvg F1 score: {np.mean(F1_score)}")
 
-        return (
-            np.mean(recall),
-            np.mean(precision),
-            np.mean(accuracy),
-            np.mean(F1_score),
-            confusion_matrix,
-        )
+        metrics = {
+            'avg': [np.mean(recall), np.mean(precision), np.mean(accuracy), np.mean(F1_score)],
+            'per_class': [recall, precision, accuracy, F1_score],
+            'cm': confusion_matrix
+        }
+
+        return metrics
 
     def __compute_metrics(
         self, correct_total: int, running_loss: float, total_items: int,
