@@ -5,9 +5,7 @@ import copy
 import abc
 
 from datetime import datetime
-
-from zmq import device
-from utils import train_utils
+from utils import plots
 from torch import optim
 from tqdm import tqdm
 
@@ -138,7 +136,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
 
     def __plot_loss_and_acc(self, data, epoch):
         model_name = self.model.name
-        train_utils.plot_save_loss_acc(
+        plots.plot_save_loss_acc(
             model_name=model_name,
             data=data,
             path_to_save_plot=f"./plots/",
@@ -152,7 +150,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             num_samples = class_count
             normed_weights = [1 - (x / torch.sum(num_samples)) for x in num_samples]
             normed_weights = torch.FloatTensor(normed_weights).to(self.device)
-        if class_count is not None and loss == "crossentropyloss":
+        if loss == "crossentropyloss" and class_count is not None :
             criterion = torch.nn.CrossEntropyLoss(weight=normed_weights)
         elif loss == "crossentropyloss" and class_count is None:
             criterion = torch.nn.CrossEntropyLoss()

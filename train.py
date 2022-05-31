@@ -5,12 +5,16 @@ from utils.train_utils import (
     get_device,
     get_data_loaders,
     get_datasets,
-    initialize_model,
-    plot_metrics,
-    save_model,
-    plot_confusion_matrix,
     count_classes,
+    count_model_parameters,
 )
+
+from models.pretrained_models_selection import (
+    initialize_model,
+    save_model,
+)
+
+from utils.plots import plot_metrics, plot_confusion_matrix
 
 
 if __name__ == "__main__":
@@ -22,10 +26,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--csv",
-        type=str,
-        default="./data/",
-        help="Source path to .csv data.",
+        "--csv", type=str, default="./data/", help="Source path to .csv data.",
     )
 
     parser.add_argument(
@@ -161,13 +162,7 @@ if __name__ == "__main__":
         pretrained=True,
     )
 
-    model_trainable_params = sum(
-        p.numel() for p in model.parameters() if p.requires_grad
-    )
-    model_total_params = sum(
-        p.numel() for p in model.parameters() if not p.requires_grad
-    )
-
+    model_trainable_params, model_total_params = count_model_parameters(model=model)
     print(
         f"[INFO] Total trainable parameters of the model {model.name}: {model_trainable_params}"
     )
@@ -187,7 +182,7 @@ if __name__ == "__main__":
     )
 
     if hasattr(args, "weighted_loss") or hasattr(args, "alpha"):
-        weighted_loss = getattr(args, 'weighted_loss', None)
+        weighted_loss = getattr(args, "weighted_loss", None)
         alpha = getattr(args, "alpha", None)
         if weighted_loss or alpha:
             class_count = count_classes(num_classes=7, dataset=datasets.get("train"))

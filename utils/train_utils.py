@@ -1,16 +1,11 @@
 import torch
 import os
 import re
-import time
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+
 
 from dataset.data_set import LesionsDataset
 from torch.utils.data import WeightedRandomSampler, DataLoader
 from torchvision import transforms
-from torchvision import models
 
 
 def get_transforms(input_size, mode="train"):
@@ -95,13 +90,6 @@ def get_data_loaders(
     return loaders
 
 
-def count_classes(num_classes: int, dataset: LesionsDataset):
-    labels = torch.zeros(num_classes, dtype=torch.long)
-    for sample in dataset:
-        labels += sample.get("target")
-    return labels
-
-
 def get_datasets(
     path_to_csv: str, path_to_image_folder: str, unique: bool, input_size: int = 224
 ) -> dict:
@@ -136,205 +124,20 @@ def get_datasets(
     return datasets
 
 
-def plot_save_loss_acc(
-    model_name: str, epoch: int, data: tuple, path_to_save_plot: str = None
-) -> None:
-
-    fig = plt.figure(figsize=(15, 5))
-
-    ax = fig.add_subplot(121)
-    ax1 = fig.add_subplot(122)
-
-    axis_labels = ["loss", "acc"]
-    titles = ["Training/Validation loss.", "Training/Validation accuracy."]
-
-    train_loss_hist, val_loss_hist, train_acc_hist, val_acc_hist = data
-
-    # Train loss history plot
-    ax.plot(
-        np.arange(1, len(train_loss_hist) + 1),
-        train_loss_hist,
-        c="b",
-        label="Training loss",
-    )
-    # Val loss history plot
-    ax.plot(
-        np.arange(1, len(val_loss_hist) + 1),
-        val_loss_hist,
-        c="g",
-        label="Validation loss",
+def count_model_parameters(model):
+    model_trainable_params = sum(
+        p.numel() for p in model.parameters() if p.requires_grad
     )
 
-    # Train loss accuracy plot
-    ax1.plot(
-        np.arange(1, len(train_acc_hist) + 1),
-        train_acc_hist,
-        c="b",
-        label="Training accuracy",
+    model_total_params = sum(
+        p.numel() for p in model.parameters() if not p.requires_grad
     )
 
-    # Val loss accuracy plot
-    ax1.plot(
-        np.arange(1, len(val_acc_hist) + 1),
-        val_acc_hist,
-        c="g",
-        label="Validation accuracy",
-    )
-
-    for ax in fig.axes:
-        axis_index = fig.axes.index(ax)
-        axis_label = axis_labels[axis_index]
-        ax.set_xlabel("epochs")
-        ax.set_ylabel(axis_label)
-        ax.set_title(titles[axis_index])
-        ax.legend()
-
-    plt.show()
-
-    if path_to_save_plot and os.path.exists(path_to_save_plot):
-        file_name = f"{int(time.time())}_{model_name}_epoch_{epoch}_plot.png"
-        fig.savefig(path_to_save_plot + file_name)
-    else:
-        raise RuntimeError(f'Folder "./plots" does not exist in project structure.')
+    return model_trainable_params, model_total_params
 
 
-def set_parameter_requires_grad(model, feature_extracting):
-    if feature_extracting:
-        for param in model.parameters():
-            param.requires_grad = False
-
-
-def initialize_model(
-    model: str = "vgg19",
-    num_classes: int = 7,
-    feature_extraction: bool = True,
-    pretrained: bool = True,
-    show_progress: bool = True,
-):
-
-    model_ft = None
-    input_size = 0
-
-    model = model.lower()
-
-    if model == "vgg19":
-        model_ft = models.vgg19(pretrained=pretrained, progress=show_progress)
-        model_ft.name = "vgg19"
-        set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
-        num_features = model_ft.classifier[0].in_features
-        model_ft.classifier = torch.nn.Sequential(
-            torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
-        )
-        input_size = 224
-    elif model == "densenet121":
-        model_ft = models.densenet121(pretrained=True, progress=True)
-        model_ft.name = "densenet121"
-        set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
-        num_features = model_ft.classifier.in_features
-        model_ft.classifier = torch.nn.Sequential(
-            torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
-            torch.nn.ReLU(),
-            torch.nn.Dropout(p=0.2),
-            torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
-        )
-        input_size = 224
-    elif model == "resnet50":
-        model_ft = models.resnet50(pretrained=pretrained, progress=show_progress)
-        model_ft.name = "resnet50"
-        set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
-        num_features = model_ft.fc.in_features
-        model_ft.fc = torch.nn.Sequential(
-            torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
-            torch.nn.ReLU(),
-            torch.nn.Dropout(p=0.2),
-            torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
-        )
-        input_size = 224
-    else:
-        raise RuntimeError(f"Inaproperiate model name.")
-
-    return model_ft, input_size
-
-
-def plot_confusion_matrix(
-    confusion_matrix, model_name: str, path_to_save_plot: str = None
-):
-    fig = plt.figure(figsize=(15, 10))
-
-    class_labels = ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
-
-    df_cm = pd.DataFrame(
-        confusion_matrix.astype(int), index=class_labels, columns=class_labels
-    )
-    heatmap = sns.heatmap(df_cm, annot=True, fmt="d")
-
-    heatmap.yaxis.set_ticklabels(
-        heatmap.yaxis.get_ticklabels(), rotation=0, ha="right", fontsize=15
-    )
-
-    heatmap.xaxis.set_ticklabels(
-        heatmap.xaxis.get_ticklabels(), rotation=45, ha="right", fontsize=15
-    )
-
-    plt.ylabel("True label")
-    plt.xlabel("Predicted label")
-    plt.show()
-
-    if path_to_save_plot and os.path.exists(path_to_save_plot):
-        fname = f"{int(time.time())}_cm_{model_name}_test.png"
-        fig.savefig(path_to_save_plot + fname)
-    else:
-        raise RuntimeError(f'Folder "./plots" does not exist in project structure.')
-
-
-def save_model(model, path: str, epochs: int):
-    if os.path.exists(path=path):
-        print(f"[INFO] - Saving the model...")
-        model_fname = f"{model.name}_{epochs}_{int(time.time())}"
-        PATH = path + model_fname + ".pth"
-        torch.save(model.state_dict(), PATH)
-    else:
-        raise RuntimeError(f"Given path does not exist.")
-
-
-def plot_metrics(
-    metrics: dict, path_to_save_plot: str, model_name: str, metric_type: str
-):
-    fig = plt.figure(figsize=(15, 10))
-    if metric_type not in metrics.keys():
-        raise RuntimeError("Inaproperiate metric type.")
-    if metric_type == "avg":
-        metrics = metrics.get(metric_type)
-        data = {
-            "metrics": ["Accuracy", "Precision", "Recall", "F1 score",],
-            "scores": [metrics[-2], metrics[1], metrics[0], metrics[-1]],
-        }
-        sns.barplot(x="metrics", y="scores", data=data)
-        plt.title("Average metrics for all classes")
-        plt.ylabel("Scores")
-        plt.xlabel("Metrics")
-    elif metric_type == "per_class":
-        metrics_scores = np.vstack(metrics.get(metric_type))
-        metrics = ["Accuracy", "Precision", "Recall", "F1 score"]
-        class_labels = ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
-        scores = []
-        for l_index in range(len(class_labels)):
-            for m_index in range(len(metrics)):
-                scores.append(
-                    [
-                        class_labels[l_index],
-                        metrics[m_index],
-                        metrics_scores[m_index, l_index],
-                    ]
-                )
-        df = pd.DataFrame(scores, columns=["Mole Type", "Metric", "Score"])
-        sns.barplot(data=df, x="Mole Type", y="Score", hue="Metric")
-
-    plt.show()
-    if path_to_save_plot and os.path.exists(path_to_save_plot):
-        fname = f"{int(time.time())}_metrics_{model_name}_test_{metric_type}.png"
-        fig.savefig(path_to_save_plot + fname)
-    else:
-        raise RuntimeError(f'Folder "./plots" does not exist in project structure.')
+def count_classes(num_classes: int, dataset: LesionsDataset):
+    labels = torch.zeros(num_classes, dtype=torch.long)
+    for sample in dataset:
+        labels += sample.get("target")
+    return labels
