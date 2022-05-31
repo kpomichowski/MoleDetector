@@ -19,13 +19,14 @@ def get_transforms(input_size, mode="train"):
     if mode == "train":
         composed_transforms = transforms.Compose(
             [
-                transforms.Resize(input_size),
+                transforms.RandomResizedCrop(size=256),
                 transforms.RandomHorizontalFlip(p=0.65),
                 transforms.RandomVerticalFlip(p=0.65),
                 transforms.RandomRotation(degrees=(0, 180)),
                 transforms.ColorJitter(),
                 transforms.RandomPerspective(p=.5),
-                transforms.RandomCrop(input_size),
+                transforms.CenterCrop(size=input_size),
+                transforms.RandomAdjustSharpness(sharpness_factor=2),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std, inplace=True),
             ]
@@ -114,7 +115,8 @@ def get_datasets(
         if match:
             csv_file_name = match.group(0)
             try:
-                mode = csv_file_name.split('.')[0].split('_')[-2] if not unique else csv_file_name.split(".")[0].split("_")[-1]
+                index = -2 if not unique else -1
+                mode = csv_file_name.split('.')[0].split('_')[index] 
                 csv_path = path_to_csv + "/" + csv_file_name
                 dataset = LesionsDataset(
                     csv_filepath=csv_path,
