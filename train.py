@@ -162,11 +162,10 @@ if __name__ == "__main__":
     model_metrics = trainer.eval(
         data_loader=data_loaders.get("test")
     )
-    print(model_metrics)
+
     plot_confusion_matrix(
         confusion_matrix=model_metrics.get('cm'), model_name=model.name, path_to_save_plot="./plots/"
     )
-    print(model_metrics.get('per_class'))
 
     plot_metrics(
         metrics=model_metrics,

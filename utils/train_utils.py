@@ -113,9 +113,8 @@ def get_datasets(
         match = prog.match(csv_file)
         if match:
             csv_file_name = match.group(0)
-            print(csv_file_name)
             try:
-                mode = csv_file_name.split(".")[0].split("_")[-1]
+                mode = csv_file_name.split('.')[0].split('_')[-2] if not unique else csv_file_name.split(".")[0].split("_")[-1]
                 csv_path = path_to_csv + "/" + csv_file_name
                 dataset = LesionsDataset(
                     csv_filepath=csv_path,
