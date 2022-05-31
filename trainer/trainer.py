@@ -160,7 +160,7 @@ class Trainer(base_trainer.BaseTrainer):
 
         metrics = {
             'avg': [np.mean(recall), np.mean(precision), np.mean(accuracy), np.mean(F1_score)],
-            'per_class': [recall, precision, accuracy, F1_score],
+            'per_class': [accuracy, precision, recall, F1_score],
             'cm': confusion_matrix
         }
 
