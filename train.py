@@ -32,12 +32,14 @@ if __name__ == "__main__":
         action="store_true",
         help="Oversampling imbalanced class in data by WeightedRandomSampler.",
     )
+
     parser.add_argument(
         "--no-oversample",
         dest="oversample",
         action="store_false",
         help="Classes won't be oversampled.",
     )
+
     parser.add_argument(
         "--image_folder",
         type=str,
@@ -80,31 +82,47 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--patience", type=int, default=5, help="Patience for ReduceLROnPlateau."
+        "--patience",
+        type=int,
+        default=5,
+        help="Patience for ReduceLROnPlateau. Default is 5.",
     )
 
     parser.add_argument(
-        "--weighted_loss", action="store_true", help="Use weights for CrossEntropyLoss."
+        "--loss",
+        type=str,
+        default="crossentropyloss",
+        help="Default: CrossEntropyLoss. Possible loss functions: `crossentropyloss`, `focalloss`.",
     )
 
-    parser.add_argument(
-        "--no-weighted_loss",
-        action="store_false",
-        dest="weighted_loss",
-        help="Loss will be applied with no additional weights.",
-    )
+    if hasattr(parser.parse_known_args()[0], "loss"):
+
+        if parser.parse_known_args()[0].loss.lower() == "crossentropyloss":
+            parser.add_argument(
+                "--weighted_loss",
+                action="store_true",
+                help="Use weights for CrossEntropyLoss.",
+            )
+        else:
+            # Add here gamma and alpha values for focalloss function.
+            parser.add_argument(
+                "--gamma",
+                default=2,
+                type=int,
+                help="Gamma value for localfoss function.",
+            )
 
     parser.add_argument(
         "--unique",
         action="store_true",
-        help="Load datasets with the unique lesion IDs."
+        help="Load datasets with the unique lesion IDs.",
     )
 
     parser.add_argument(
         "--no-unique",
         action="store_false",
         dest="unique",
-        help="Dataset will be filled with the repetetive mole lesions."
+        help="Dataset will be filled with the repetetive mole lesions.",
     )
 
     args = parser.parse_args()
@@ -127,10 +145,19 @@ if __name__ == "__main__":
         pretrained=True,
     )
 
-    model_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    model_total_params = sum(p.numel() for p in model.parameters() if not p.requires_grad)
-    print(f"[INFO] Total trainable parameters of the model {model.name}: {model_trainable_params}")
-    print(f'[INFO] Total non trainable parameters of the model {model.name}: {model_total_params}')
+    model_trainable_params = sum(
+        p.numel() for p in model.parameters() if p.requires_grad
+    )
+    model_total_params = sum(
+        p.numel() for p in model.parameters() if not p.requires_grad
+    )
+
+    print(
+        f"[INFO] Total trainable parameters of the model {model.name}: {model_trainable_params}"
+    )
+    print(
+        f"[INFO] Total non trainable parameters of the model {model.name}: {model_total_params}"
+    )
 
     datasets = get_datasets(
         path_to_csv=args.csv,
@@ -138,7 +165,7 @@ if __name__ == "__main__":
         input_size=input_size,
         unique=args.unique,
     )
-    
+
     data_loaders = get_data_loaders(
         datasets=datasets, over_sample=args.oversample, batch_size=args.batch_size,
     )
@@ -148,8 +175,10 @@ if __name__ == "__main__":
         scheduler=args.scheduler,
         optimizer=args.optimizer,
         lr=args.lr,
+        loss=args.loss,
         patience=args.patience,
-        weighted_loss=args.weighted_loss,
+        gamma=args.gamma if hasattr(args, "gamma") else None,
+        weighted_loss=args.weighted_loss if hasattr(args, "weighted_loss") else False,
         device=device,
         validate=True,
     )
@@ -159,24 +188,24 @@ if __name__ == "__main__":
     save_model(model=model, path=MODEL_WTS_DST_PATH, epochs=args.epochs)
 
     # Evaluation of the model
-    model_metrics = trainer.eval(
-        data_loader=data_loaders.get("test")
-    )
+    model_metrics = trainer.eval(data_loader=data_loaders.get("test"))
 
     plot_confusion_matrix(
-        confusion_matrix=model_metrics.get('cm'), model_name=model.name, path_to_save_plot="./plots/"
+        confusion_matrix=model_metrics.get("cm"),
+        model_name=model.name,
+        path_to_save_plot="./plots/",
     )
 
     plot_metrics(
         metrics=model_metrics,
         model_name=model.name,
         path_to_save_plot="./plots/",
-        metric_type='avg',
+        metric_type="avg",
     )
 
     plot_metrics(
         metrics=model_metrics,
         model_name=model.name,
         path_to_save_plot="./plots/",
-        metric_type='per_class',
+        metric_type="per_class",
     )

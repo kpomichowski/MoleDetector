@@ -24,7 +24,7 @@ def get_transforms(input_size, mode="train"):
                 transforms.RandomVerticalFlip(p=0.65),
                 transforms.RandomRotation(degrees=(0, 180)),
                 transforms.ColorJitter(),
-                transforms.RandomPerspective(p=.5),
+                transforms.RandomPerspective(p=0.5),
                 transforms.CenterCrop(size=input_size),
                 transforms.RandomAdjustSharpness(sharpness_factor=2),
                 transforms.ToTensor(),
@@ -106,7 +106,6 @@ def get_datasets(
         file_names = os.listdir(path)
         return (file_name for file_name in file_names if file_name.endswith(suffix))
 
-    
     pattern = r"\w+(train|test|val).csv" if unique else r"\w+(train|test|val)_org.csv"
 
     prog = re.compile(pattern, re.IGNORECASE)
@@ -116,7 +115,7 @@ def get_datasets(
             csv_file_name = match.group(0)
             try:
                 index = -2 if not unique else -1
-                mode = csv_file_name.split('.')[0].split('_')[index] 
+                mode = csv_file_name.split(".")[0].split("_")[index]
                 csv_path = path_to_csv + "/" + csv_file_name
                 dataset = LesionsDataset(
                     csv_filepath=csv_path,
@@ -224,30 +223,16 @@ def initialize_model(
         input_size = 224
     elif model == "densenet121":
         model_ft = models.densenet121(pretrained=True, progress=True)
-        model_ft.name = 'densenet121'
+        model_ft.name = "densenet121"
         set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
         num_features = model_ft.classifier.in_features
         model_ft.classifier = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
-            torch.nn.Linear(in_features=128, out_features=7, bias=True),
+            torch.nn.Dropout(p=0.2),
+            torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
-
-        input_size=224
-
-    elif model == "inceptionv3":
-        model_ft = models.inception_v3(pretrained=pretrained, progress=show_progress)
-        model_ft.name = "inceptionv3"
-        set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
-        num_features = model_ft.AuxLogits.fc.in_features
-        model_ft.AuxLogits.fc = torch.nn.Linear(
-            in_features=num_features, out_features=num_classes
-        )
-        num_features = model_ft.fc.in_features
-        model_ft.fc = torch.nn.Linear(
-            in_features=num_features, out_features=num_classes
-        )
-        input_size = 299
+        input_size = 224
     elif model == "resnet50":
         model_ft = models.resnet50(pretrained=pretrained, progress=show_progress)
         model_ft.name = "resnet50"
@@ -312,27 +297,33 @@ def plot_metrics(
 ):
     fig = plt.figure(figsize=(15, 10))
     if metric_type not in metrics.keys():
-        raise RuntimeError('Inaproperiate metric type.')
-    if metric_type == 'avg':
+        raise RuntimeError("Inaproperiate metric type.")
+    if metric_type == "avg":
         metrics = metrics.get(metric_type)
         data = {
             "metrics": ["Accuracy", "Precision", "Recall", "F1 score",],
             "scores": [metrics[-2], metrics[1], metrics[0], metrics[-1]],
         }
         sns.barplot(x="metrics", y="scores", data=data)
-        plt.title('Average metrics for all classes')
+        plt.title("Average metrics for all classes")
         plt.ylabel("Scores")
         plt.xlabel("Metrics")
-    elif metric_type == 'per_class':
+    elif metric_type == "per_class":
         metrics_scores = np.vstack(metrics.get(metric_type))
         metrics = ["Accuracy", "Precision", "Recall", "F1 score"]
         class_labels = ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
         scores = []
         for l_index in range(len(class_labels)):
             for m_index in range(len(metrics)):
-                scores.append([class_labels[l_index], metrics[m_index], metrics_scores[m_index, l_index]])
-        df = pd.DataFrame(scores, columns=['Mole Type', 'Metric', 'Score'])
-        sns.barplot(data=df, x='Mole Type', y='Score', hue='Metric')
+                scores.append(
+                    [
+                        class_labels[l_index],
+                        metrics[m_index],
+                        metrics_scores[m_index, l_index],
+                    ]
+                )
+        df = pd.DataFrame(scores, columns=["Mole Type", "Metric", "Score"])
+        sns.barplot(data=df, x="Mole Type", y="Score", hue="Metric")
 
     plt.show()
     if path_to_save_plot and os.path.exists(path_to_save_plot):
@@ -340,5 +331,3 @@ def plot_metrics(
         fig.savefig(path_to_save_plot + fname)
     else:
         raise RuntimeError(f'Folder "./plots" does not exist in project structure.')
-
-

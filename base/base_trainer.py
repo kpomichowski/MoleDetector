@@ -5,6 +5,8 @@ import copy
 import abc
 
 from datetime import datetime
+
+from zmq import device
 from utils import train_utils
 from torch import optim
 from tqdm import tqdm
@@ -25,14 +27,18 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         model,
         device: torch.device,
         optimizer: str,
+        loss: str,
         weighted_loss: bool,
+        gamma: int,
         lr: float = 1e-3,
         scheduler: str = None,
         **kwargs,
     ):
         self.model = model
         self.device = device
-        self.criterion = self.__init_loss(is_weighted=weighted_loss)
+        self.criterion = self.__init_loss(
+            loss=loss, is_weighted=weighted_loss, gamma=gamma
+        )
         self.optimizer = self.__init_optimizer(
             optimizer_name=optimizer, lr=lr, **kwargs
         )
@@ -139,14 +145,26 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             epoch=epoch,
         )
 
-    def __init_loss(self, is_weighted: bool):
-        if is_weighted:
+    def __init_loss(
+        self, loss: str, gamma: int = None, is_weighted: bool = False,
+    ):
+        print(loss, is_weighted)
+        if is_weighted and loss == "crossentropyloss":
             num_samples = [116, 122, 321, 32, 176, 3162, 40]
             normed_weights = [1 - (x / sum(num_samples)) for x in num_samples]
             normed_weights = torch.FloatTensor(normed_weights).to(self.device)
             criterion = torch.nn.CrossEntropyLoss(weight=normed_weights)
-        else:
+        elif loss == "crossentropyloss" and not is_weighted:
             criterion = torch.nn.CrossEntropyLoss()
+        elif loss == "focalloss":
+            criterion = torch.hub.load(
+                "adeelh/pytorch-multi-class-focal-loss",
+                model="focal_loss",
+                gamma=gamma,
+                device=self.device,
+                force_reload=False,
+                reduction="sum",
+            )
 
         return criterion
 

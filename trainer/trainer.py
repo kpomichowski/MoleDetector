@@ -37,14 +37,10 @@ class Trainer(base_trainer.BaseTrainer):
 
             self.optimizer.zero_grad()
 
-            if self.model.name == "inceptionv3":
-                logits, aux_outputs = self.model(inputs)
-                loss = self._compute_loss(model_output=logits, targets=targets_)
-                loss_ = self._compute_loss(model_output=aux_outputs, targets=targets_)
-                loss = loss * 0.4 * loss_
-            else:
-                logits = self.model(inputs)
-                loss = self._compute_loss(model_output=logits, targets=targets_)
+            logits = self.model(inputs)
+            print(logits.size())
+
+            loss = self._compute_loss(model_output=logits, targets=targets_)
 
             _, predictions = torch.max(logits, dim=1)
 
@@ -88,7 +84,6 @@ class Trainer(base_trainer.BaseTrainer):
                 _, predictions = torch.max(logits, dim=1)
 
                 loss = self._compute_loss(model_output=logits, targets=targets_)
-
                 running_loss += loss.item() * inputs.size(0)
                 batch_length, correct_predicts = self._compute_acc(
                     predicts=predictions, target_gt=targets_
@@ -159,9 +154,14 @@ class Trainer(base_trainer.BaseTrainer):
         print(f"\nAvg F1 score: {np.mean(F1_score)}")
 
         metrics = {
-            'avg': [np.mean(recall), np.mean(precision), np.mean(accuracy), np.mean(F1_score)],
-            'per_class': [accuracy, precision, recall, F1_score],
-            'cm': confusion_matrix
+            "avg": [
+                np.mean(recall),
+                np.mean(precision),
+                np.mean(accuracy),
+                np.mean(F1_score),
+            ],
+            "per_class": [accuracy, precision, recall, F1_score],
+            "cm": confusion_matrix,
         }
 
         return metrics
