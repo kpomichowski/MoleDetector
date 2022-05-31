@@ -95,6 +95,13 @@ def get_data_loaders(
     return loaders
 
 
+def count_classes(num_classes: int, dataset: LesionsDataset):
+    labels = torch.zeros(num_classes, dtype=torch.long)
+    for sample in dataset:
+        labels += sample.get("target")
+    return labels
+
+
 def get_datasets(
     path_to_csv: str, path_to_image_folder: str, unique: bool, input_size: int = 224
 ) -> dict:

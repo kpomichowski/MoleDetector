@@ -28,7 +28,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         device: torch.device,
         optimizer: str,
         loss: str,
-        weighted_loss: bool,
+        class_count: torch.tensor,
         gamma: int,
         lr: float = 1e-3,
         scheduler: str = None,
@@ -37,7 +37,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         self.model = model
         self.device = device
         self.criterion = self.__init_loss(
-            loss=loss, is_weighted=weighted_loss, gamma=gamma
+            loss=loss, class_count=class_count, gamma=gamma
         )
         self.optimizer = self.__init_optimizer(
             optimizer_name=optimizer, lr=lr, **kwargs
@@ -146,21 +146,31 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         )
 
     def __init_loss(
-        self, loss: str, gamma: int = None, is_weighted: bool = False,
+        self, loss: str, class_count: torch.tensor or None, gamma: int = None
     ):
-        print(loss, is_weighted)
-        if is_weighted and loss == "crossentropyloss":
-            num_samples = [116, 122, 321, 32, 176, 3162, 40]
-            normed_weights = [1 - (x / sum(num_samples)) for x in num_samples]
+        if class_count is not None:
+            num_samples = class_count
+            normed_weights = [1 - (x / torch.sum(num_samples)) for x in num_samples]
             normed_weights = torch.FloatTensor(normed_weights).to(self.device)
+        if class_count is not None and loss == "crossentropyloss":
             criterion = torch.nn.CrossEntropyLoss(weight=normed_weights)
-        elif loss == "crossentropyloss" and not is_weighted:
+        elif loss == "crossentropyloss" and class_count is None:
             criterion = torch.nn.CrossEntropyLoss()
-        elif loss == "focalloss":
+        elif loss == "focalloss" and class_count is None:
             criterion = torch.hub.load(
                 "adeelh/pytorch-multi-class-focal-loss",
                 model="focal_loss",
                 gamma=gamma,
+                device=self.device,
+                force_reload=False,
+                reduction="mean",
+            )
+        elif loss == "focalloss" and class_count is not None:
+            criterion = torch.hub.load(
+                "adeelh/pytorch-multi-class-focal-loss",
+                model="focal_loss",
+                gamma=gamma,
+                alpha=class_count,
                 device=self.device,
                 force_reload=False,
                 reduction="mean",

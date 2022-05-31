@@ -9,6 +9,7 @@ from utils.train_utils import (
     plot_metrics,
     save_model,
     plot_confusion_matrix,
+    count_classes,
 )
 
 
@@ -23,7 +24,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--csv",
         type=str,
-        default="./data/HAM10000_original.csv",
+        default="./data/",
         help="Source path to .csv data.",
     )
 
@@ -103,13 +104,28 @@ if __name__ == "__main__":
                 action="store_true",
                 help="Use weights for CrossEntropyLoss.",
             )
+            parser.add_argument(
+                "--no-weighted-loss",
+                action="store_false",
+                help="Do not use weights for CrossEntropyLoss.",
+            )
         else:
-            # Add here gamma and alpha values for focalloss function.
             parser.add_argument(
                 "--gamma",
                 default=2,
                 type=int,
                 help="Gamma value for localfoss function.",
+            )
+            parser.add_argument(
+                "--alpha",
+                action="store_true",
+                help="Alpha parameter (weights) will be applied to focal loss function.",
+            )
+            parser.add_argument(
+                "--no-alpha",
+                action="store_false",
+                dest="alpha",
+                help="Weight won't applied to focal loss function.",
             )
 
     parser.add_argument(
@@ -170,6 +186,14 @@ if __name__ == "__main__":
         datasets=datasets, over_sample=args.oversample, batch_size=args.batch_size,
     )
 
+    if hasattr(args, "weighted_loss") or hasattr(args, "alpha"):
+        weighted_loss = getattr(args, 'weighted_loss', None)
+        alpha = getattr(args, "alpha", None)
+        if weighted_loss or alpha:
+            class_count = count_classes(num_classes=7, dataset=datasets.get("train"))
+        else:
+            class_count = None
+
     trainer = Trainer(
         model=model,
         scheduler=args.scheduler,
@@ -178,7 +202,7 @@ if __name__ == "__main__":
         loss=args.loss,
         patience=args.patience,
         gamma=args.gamma if hasattr(args, "gamma") else None,
-        weighted_loss=args.weighted_loss if hasattr(args, "weighted_loss") else False,
+        class_count=class_count,
         device=device,
         validate=True,
     )

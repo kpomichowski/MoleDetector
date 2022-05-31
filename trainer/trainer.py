@@ -38,7 +38,6 @@ class Trainer(base_trainer.BaseTrainer):
             self.optimizer.zero_grad()
 
             logits = self.model(inputs)
-            print(logits.size())
 
             loss = self._compute_loss(model_output=logits, targets=targets_)
 
@@ -74,7 +73,7 @@ class Trainer(base_trainer.BaseTrainer):
 
         with torch.no_grad():
 
-            for batch_index, samples in enumerate(data_loader):
+            for _, samples in enumerate(data_loader):
 
                 inputs, targets = samples.get("input"), samples.get("target")
                 inputs, targets = inputs.to(self.device), targets.to(self.device)
@@ -109,7 +108,6 @@ class Trainer(base_trainer.BaseTrainer):
     def _eval(self, data_loader, num_classes=7):
 
         self.model.eval()
-        # TODO: create confusion metric, recall, precision, accuracy, auc roc.
         confusion_matrix = np.zeros((num_classes, num_classes))
         correct_total = 0
         with torch.no_grad():
@@ -124,7 +122,7 @@ class Trainer(base_trainer.BaseTrainer):
                 for target, prediction in zip(targets_.view(-1), predictions.view(-1)):
                     confusion_matrix[target.long(), prediction.long()] += 1
 
-                batch_length, correct_predicts = self._compute_acc(
+                _, correct_predicts = self._compute_acc(
                     predicts=predictions, target_gt=targets_
                 )
 
