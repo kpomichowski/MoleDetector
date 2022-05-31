@@ -163,7 +163,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                 gamma=gamma,
                 device=self.device,
                 force_reload=False,
-                reduction="sum",
+                reduction="mean",
             )
 
         return criterion
