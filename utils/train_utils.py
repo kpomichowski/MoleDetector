@@ -141,3 +141,14 @@ def count_classes(num_classes: int, dataset: LesionsDataset):
     for sample in dataset:
         labels += sample.get("target")
     return labels
+
+
+def unfreeze_layers(model, layers: tuple or list) -> None:
+    layer_index = 0
+    for layer in model.children():
+        layer_index += 1
+        if layer_index in layers:
+            for parameter in layer.parameters():
+                parameter.requires_grad = True
+        
+ 

@@ -9,7 +9,7 @@ from datetime import datetime
 from utils import plots
 from torch import optim
 from tqdm import tqdm
-
+from utils import train_utils
 
 class BaseTrainer(metaclass=abc.ABCMeta):
 
@@ -22,8 +22,8 @@ class BaseTrainer(metaclass=abc.ABCMeta):
     }
 
     __losses = {
-        'crossentropyloss': torch.nn.CrossEntropyLoss,
-        'focalloss': losses.focal_loss
+        "crossentropyloss": torch.nn.CrossEntropyLoss,
+        "focalloss": losses.focal_loss,
     }
 
     def __init__(
@@ -32,6 +32,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         device: torch.device,
         optimizer: str,
         loss: str,
+        unfreeze_weights: bool,
         class_count: torch.tensor,
         gamma: int,
         lr: float = 1e-3,
@@ -47,11 +48,9 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             optimizer_name=optimizer, lr=lr, **kwargs
         )
         self.scheduler = self.__init_scheduler(scheduler_name=scheduler, **kwargs)
+        self.unfreeze_weights = unfreeze_weights
 
     def train(self, data_loaders: dict, num_epochs: int):
-        data_loaders__c = copy.deepcopy(data_loaders)
-        if "test" in data_loaders.keys():
-            data_loaders__c.pop("test")
         self.model.to(self.device)
         return self.__train_loop(data_loaders=data_loaders, num_epochs=num_epochs)
 
@@ -76,7 +75,8 @@ class BaseTrainer(metaclass=abc.ABCMeta):
 
         best_model_weights = copy.deepcopy(self.model.state_dict())
         best_validation_acc = 0.0
-
+        is_unfreezed = False
+        
         train_loader = data_loaders.get("train")
         validation_loader = data_loaders.get("val")
 
@@ -92,10 +92,15 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                 f'\n\n[{datetime.now().isoformat(" ", "seconds")}]\n\n\t [INFO] Current epoch: {epoch} of {num_epochs}\n'
             )
 
+            if epoch % 5 == 0 and not is_unfreezed:
+                if self.unfreeze_weights:
+                    train_utils.unfreeze_layers(model=self.model, layers=(1, 5, 8))
+                    is_unfreezed = True
+
             training_acc, training_loss = self._train_one_epoch(
                 data_loader=train_loader, epoch=epoch
             )
-
+            
             # store the history of train accuracy and loss
             train_acc_history.append(training_acc)
             train_loss_history.append(training_loss)
@@ -157,16 +162,21 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             normed_weights = [1 - (x / torch.sum(num_samples)) for x in num_samples]
             normed_weights = torch.FloatTensor(normed_weights).to(self.device)
         loss_ = self.__losses.get(loss)
-        if loss is None: raise RuntimeError(f'Specified loss does not exist. Available losses are: `focalloss`, `crossentropyloss`.')
-        if class_count is not None and loss == 'crossentropyloss':
+        if loss is None:
+            raise RuntimeError(
+                f"Specified loss does not exist. Available losses are: `focalloss`, `crossentropyloss`."
+            )
+        if class_count is not None and loss == "crossentropyloss":
             criterion = loss_(weight=normed_weights)
-        elif class_count is not None and loss == 'focalloss':
-            criterion = loss_(gamma=gamma, alpha=normed_weights, reduction='mean', device=self.device)
-        elif class_count is None and loss == 'focalloss':
-            criterion = loss_(gamma=gamma, reduction='mean', device=self.device)
+        elif class_count is not None and loss == "focalloss":
+            criterion = loss_(
+                gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
+            )
+        elif class_count is None and loss == "focalloss":
+            criterion = loss_(gamma=gamma, reduction="mean", device=self.device)
         else:
             criterion = loss_()
-        
+
         return criterion
 
     def __init_scheduler(self, scheduler_name: str, **kwargs):
@@ -188,7 +198,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         if not optimizer:
             raise RuntimeError(f"Inaproperiate name of an optimizer.")
         optimizer_params = self.__get_kwargs_params(obj=optimizer, **kwargs)
-        return optimizer(self.model.parameters(), lr=lr, **optimizer_params)
+        return optimizer(filter(lambda param: param.requires_grad, self.model.parameters()), lr=lr, **optimizer_params)
 
     @staticmethod
     def __get_kwargs_params(obj, **kwargs):
@@ -199,4 +209,3 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         batch_len = predicts.size(0)
         corrects = torch.sum(predicts == target_gt).sum().item()
         return batch_len, corrects
-

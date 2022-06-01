@@ -1,4 +1,3 @@
-from matplotlib.pyplot import axis
 import torch
 import numpy as np
 
@@ -35,8 +34,6 @@ class Trainer(base_trainer.BaseTrainer):
             # Decoding one-hot encoded target
             targets_ = torch.argmax(targets, dim=1)
 
-            self.optimizer.zero_grad()
-
             logits = self.model(inputs)
 
             loss = self._compute_loss(model_output=logits, targets=targets_)
@@ -46,8 +43,9 @@ class Trainer(base_trainer.BaseTrainer):
             running_loss += loss.item() * inputs.size(0)
 
             loss.backward()
-
+            
             self.optimizer.step()
+            self.optimizer.zero_grad()
 
             batch_length, correct_predicts = self._compute_acc(
                 predicts=predictions, target_gt=targets_

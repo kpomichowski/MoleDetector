@@ -97,8 +97,12 @@ if __name__ == "__main__":
         help="Default: CrossEntropyLoss. Possible loss functions: `crossentropyloss`, `focalloss`.",
     )
 
-    parser.add_argument('--unfrozen-weights', action='store_true', help='Partially unfrozen layers for the model.')
-    
+    parser.add_argument(
+        "--unfreeze-weights",
+        action="store_true",
+        help="Partially unfrozen layers for the model.",
+    )
+
     if hasattr(parser.parse_known_args()[0], "loss"):
 
         if parser.parse_known_args()[0].loss.lower() == "crossentropyloss":
@@ -180,6 +184,7 @@ if __name__ == "__main__":
         lr=args.lr,
         loss=args.loss,
         patience=args.patience,
+        unfreeze_weights=args.unfreeze_weights,
         gamma=args.gamma if hasattr(args, "gamma") else None,
         class_count=class_count,
         device=device,
