@@ -41,7 +41,7 @@ class Trainer(base_trainer.BaseTrainer):
             _, predictions = torch.max(logits, dim=1)
 
             running_loss += loss.item() * inputs.size(0)
-            
+
             loss.backward()
             self.optimizer.step()
             self.optimizer.zero_grad()

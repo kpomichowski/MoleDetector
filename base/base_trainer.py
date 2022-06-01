@@ -12,6 +12,10 @@ from tqdm import tqdm
 from utils import train_utils
 
 
+def get_kwargs_params(obj, **kwargs):
+    object_params = list(inspect.signature(obj).parameters)
+    return {k: kwargs.pop(k) for k in dict(kwargs) if k in object_params}
+
 class BaseTrainer(metaclass=abc.ABCMeta):
 
     __schedulers = {
@@ -34,6 +38,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         optimizer: str,
         loss: str,
         unfreeze_weights: bool,
+        layers: list,
         class_count: torch.tensor,
         gamma: int,
         lr: float = 1e-3,
@@ -50,15 +55,62 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         )
         self.scheduler = self.__init_scheduler(scheduler_name=scheduler, **kwargs)
         self.unfreeze_weights = unfreeze_weights
+        if self.unfreeze_weights:
+            self.layers = layers
+
+    def __init_loss(
+        self, loss: str, class_count: torch.tensor or None, gamma: int = None
+    ):
+        if class_count is not None:
+            num_samples = class_count
+            normed_weights = [1 - (x / torch.sum(num_samples)) for x in num_samples]
+            normed_weights = torch.FloatTensor(normed_weights).to(self.device)
+        loss_ = self.__losses.get(loss)
+        if loss is None:
+            raise RuntimeError(
+                f"Specified loss does not exist. Available losses are: `focalloss`, `crossentropyloss`."
+            )
+        if class_count is not None and loss == "crossentropyloss":
+            criterion = loss_(weight=normed_weights)
+        elif class_count is not None and loss == "focalloss":
+            criterion = loss_(
+                gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
+            )
+        elif class_count is None and loss == "focalloss":
+            criterion = loss_(gamma=gamma, reduction="mean", device=self.device)
+        else:
+            criterion = loss_()
+
+        return criterion
+
+    def __init_scheduler(self, scheduler_name: str, **kwargs):
+        if scheduler_name:
+            scheduler = self.__schedulers.get(scheduler_name.lower())
+            scheduler_params = get_kwargs_params(scheduler, **kwargs)
+            if not scheduler:
+                raise RuntimeError(f"Inaproperiate name of a scheduler.")
+            return scheduler(
+                self.optimizer,
+                verbose=True,
+                factor=scheduler_params.pop("factor", 0.5),
+                patience=scheduler_params.pop("patience", 5),
+                **scheduler_params,
+            )
+
+    def __init_optimizer(self, optimizer_name, lr, **kwargs):
+        optimizer = self.__optimizers.get(optimizer_name.lower())
+        if not optimizer:
+            raise RuntimeError(f"Inaproperiate name of an optimizer.")
+        optimizer_params = get_kwargs_params(obj=optimizer, **kwargs)
+        return optimizer(
+            filter(lambda param: param.requires_grad, self.model.parameters()),
+            lr=lr,
+            **optimizer_params,
+        )
 
     def train(self, data_loaders: dict, num_epochs: int):
         self.model.to(self.device)
         return self.__train_loop(data_loaders=data_loaders, num_epochs=num_epochs)
-
-    def _compute_loss(
-        self, model_output: torch.tensor, targets: torch.tensor
-    ) -> torch.tensor:
-        return self.criterion(model_output, targets)
 
     @abc.abstractmethod
     def _train_one_epoch(self, data_loaders: dict, epoch: int = 1):
@@ -96,14 +148,14 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             training_acc, training_loss = self._train_one_epoch(
                 data_loader=train_loader, epoch=epoch
             )
-
+            
             if epoch % 5 == 0 and not is_unfreezed:
-                if self.unfreeze_weights:
-                    layers = (5, 8)
+                if self.unfreeze_weights and self.layers:
+                    self.layers = tuple(self.layers)
                     print(
-                        f"[INFO] - epoch {epoch} - unfreezing weights in the following layers: {layers}."
+                        f"\n[INFO] - epoch {epoch} - unfreezing weights in the following layers: {self.layers}."
                     )
-                    train_utils.unfreeze_layers(model=self.model, layers=layers)
+                    train_utils.unfreeze_layers(model=self.model, layers=self.layers)
                     is_unfreezed = True
                     print(
                         f"[INFO] Total trainable params after unfreeze layers: {train_utils.count_model_parameters(self.model)[0]}."
@@ -162,62 +214,13 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             epoch=epoch,
         )
 
-    def __init_loss(
-        self, loss: str, class_count: torch.tensor or None, gamma: int = None
-    ):
-        if class_count is not None:
-            num_samples = class_count
-            normed_weights = [1 - (x / torch.sum(num_samples)) for x in num_samples]
-            normed_weights = torch.FloatTensor(normed_weights).to(self.device)
-        loss_ = self.__losses.get(loss)
-        if loss is None:
-            raise RuntimeError(
-                f"Specified loss does not exist. Available losses are: `focalloss`, `crossentropyloss`."
-            )
-        if class_count is not None and loss == "crossentropyloss":
-            criterion = loss_(weight=normed_weights)
-        elif class_count is not None and loss == "focalloss":
-            criterion = loss_(
-                gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
-            )
-        elif class_count is None and loss == "focalloss":
-            criterion = loss_(gamma=gamma, reduction="mean", device=self.device)
-        else:
-            criterion = loss_()
-
-        return criterion
-
-    def __init_scheduler(self, scheduler_name: str, **kwargs):
-        if scheduler_name:
-            scheduler = self.__schedulers.get(scheduler_name.lower())
-            scheduler_params = self.__get_kwargs_params(scheduler, **kwargs)
-            if not scheduler:
-                raise RuntimeError(f"Inaproperiate name of a scheduler.")
-            return scheduler(
-                self.optimizer,
-                verbose=True,
-                factor=scheduler_params.pop("factor", 0.5),
-                patience=scheduler_params.pop("patience", 5),
-                **scheduler_params,
-            )
-
-    def __init_optimizer(self, optimizer_name, lr, **kwargs):
-        optimizer = self.__optimizers.get(optimizer_name.lower())
-        if not optimizer:
-            raise RuntimeError(f"Inaproperiate name of an optimizer.")
-        optimizer_params = self.__get_kwargs_params(obj=optimizer, **kwargs)
-        return optimizer(
-            filter(lambda param: param.requires_grad, self.model.parameters()),
-            lr=lr,
-            **optimizer_params,
-        )
-
-    @staticmethod
-    def __get_kwargs_params(obj, **kwargs):
-        object_params = list(inspect.signature(obj).parameters)
-        return {k: kwargs.pop(k) for k in dict(kwargs) if k in object_params}
-
     def _compute_acc(self, predicts: torch.Tensor, target_gt: torch.Tensor):
         batch_len = predicts.size(0)
         corrects = torch.sum(predicts == target_gt).sum().item()
         return batch_len, corrects
+
+    def _compute_loss(
+        self, model_output: torch.tensor, targets: torch.tensor
+    ) -> torch.tensor:
+        return self.criterion(model_output, targets)
+

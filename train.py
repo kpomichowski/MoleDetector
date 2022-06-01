@@ -103,6 +103,15 @@ if __name__ == "__main__":
         help="Partially unfrozen layers for the model.",
     )
 
+    if hasattr(parser.parse_known_args()[0], "unfreeze_weights"):
+        if parser.parse_known_args()[0].unfreeze_weights:
+            parser.add_argument(
+                "--layers",
+                type=int,
+                nargs="+",
+                help="Specify which in which layers, weights should be unfrozen. Example: `--layers 2 3`. In 2nd and 3rd layers weights will be unfrozen.",
+            )
+
     if hasattr(parser.parse_known_args()[0], "loss"):
 
         if parser.parse_known_args()[0].loss.lower() == "crossentropyloss":
@@ -185,6 +194,7 @@ if __name__ == "__main__":
         loss=args.loss,
         patience=args.patience,
         unfreeze_weights=args.unfreeze_weights,
+        layers=args.layers,
         gamma=args.gamma if hasattr(args, "gamma") else None,
         class_count=class_count,
         device=device,

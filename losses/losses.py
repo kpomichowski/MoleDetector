@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-import time
+
 class FocalLoss(torch.nn.Module):
     def __init__(self, gamma=2, alpha=None, reduction="mean"):
 
@@ -14,15 +14,15 @@ class FocalLoss(torch.nn.Module):
         self.gamma = gamma
         self.alpha = alpha
         self.reduction = reduction
-        
+
     def forward(self, input: torch.tensor, target: torch.tensor) -> torch.tensor:
-        logits = F.cross_entropy(input=input, target=target, reduction='none')
+        logits = F.cross_entropy(input=input, target=target, reduction="none")
         pt = torch.exp(-logits)
         at = self.alpha.gather(0, target.data.view(-1))
         loss = at * (1 - pt) ** self.gamma * logits
-        if self.reduction == 'sum':
+        if self.reduction == "sum":
             loss = loss.sum()
-        elif self.reduction == 'mean':
+        elif self.reduction == "mean":
             loss = loss.mean()
         return loss
 
