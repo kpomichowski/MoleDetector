@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-
+import time
 class FocalLoss(torch.nn.Module):
     def __init__(self, gamma=2, alpha=None, reduction="mean"):
 
@@ -14,26 +14,16 @@ class FocalLoss(torch.nn.Module):
         self.gamma = gamma
         self.alpha = alpha
         self.reduction = reduction
-
+        
     def forward(self, input: torch.tensor, target: torch.tensor) -> torch.tensor:
-        CE_loss = F.cross_entropy(input=input, target=target, reduction="none")
-        target = target.type(torch.long)
-        pt = torch.exp(-CE_loss)
-
-        is_alpha = self.alpha is not None
-        if is_alpha:
-            assert (
-                self.alpha.size() == pt.size() == CE_loss.size()
-            ), "Batch size not equal to the num of weights in alpha."
-        if self.reduction == "mean" and is_alpha:
-            loss = (self.alpha * (1 - pt) ** self.gamma * CE_loss).mean()
-        elif self.reduction == "sum" and is_alpha:
-            loss = (self.alpha * (1 - pt) ** self.gamma * CE_loss).sum()
-        elif self.reduction == "mean" and not is_alpha:
-            loss = ((1 - pt) ** self.gamma * CE_loss).mean()
-        elif self.reduction == "sum" and not is_alpha:
-            loss = ((1 - pt) ** self.gamma * CE_loss).sum()
-
+        logits = F.cross_entropy(input=input, target=target, reduction='none')
+        pt = torch.exp(-logits)
+        at = self.alpha.gather(0, target.data.view(-1))
+        loss = at * (1 - pt) ** self.gamma * logits
+        if self.reduction == 'sum':
+            loss = loss.sum()
+        elif self.reduction == 'mean':
+            loss = loss.mean()
         return loss
 
 
