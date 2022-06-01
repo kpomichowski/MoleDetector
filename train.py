@@ -43,7 +43,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--image_folder",
+        "--image-folder",
         type=str,
         default="./data/HAM10000",
         help="Source path to folder that contains skin cancer images.",
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         "--model", type=str, default="vgg19", help="Model to train and evaluate data."
     )
     parser.add_argument(
-        "--batch_size", type=int, default=32, help="The size of batches in dataloader."
+        "--batch-size", type=int, default=32, help="The size of batches in dataloader."
     )
     parser.add_argument(
         "--lr", type=float, default=0.001, help="The default learning rate value."
@@ -97,18 +97,15 @@ if __name__ == "__main__":
         help="Default: CrossEntropyLoss. Possible loss functions: `crossentropyloss`, `focalloss`.",
     )
 
+    parser.add_argument('--unfrozen-weights', action='store_true', help='Partially unfrozen layers for the model.')
+    
     if hasattr(parser.parse_known_args()[0], "loss"):
 
         if parser.parse_known_args()[0].loss.lower() == "crossentropyloss":
             parser.add_argument(
-                "--weighted_loss",
+                "--weighted-loss",
                 action="store_true",
                 help="Use weights for CrossEntropyLoss.",
-            )
-            parser.add_argument(
-                "--no-weighted-loss",
-                action="store_false",
-                help="Do not use weights for CrossEntropyLoss.",
             )
         else:
             parser.add_argument(
@@ -122,24 +119,11 @@ if __name__ == "__main__":
                 action="store_true",
                 help="Alpha parameter (weights) will be applied to focal loss function.",
             )
-            parser.add_argument(
-                "--no-alpha",
-                action="store_false",
-                dest="alpha",
-                help="Weight won't applied to focal loss function.",
-            )
 
     parser.add_argument(
         "--unique",
         action="store_true",
         help="Load datasets with the unique lesion IDs.",
-    )
-
-    parser.add_argument(
-        "--no-unique",
-        action="store_false",
-        dest="unique",
-        help="Dataset will be filled with the repetetive mole lesions.",
     )
 
     args = parser.parse_args()

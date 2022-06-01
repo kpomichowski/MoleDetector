@@ -4,6 +4,7 @@ import torch
 import copy
 import abc
 
+from losses import losses
 from datetime import datetime
 from utils import plots
 from torch import optim
@@ -18,6 +19,11 @@ class BaseTrainer(metaclass=abc.ABCMeta):
 
     __optimizers = {
         "adam": optim.Adam,
+    }
+
+    __losses = {
+        'crossentropyloss': torch.nn.CrossEntropyLoss,
+        'focalloss': losses.focal_loss
     }
 
     def __init__(
@@ -150,30 +156,17 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             num_samples = class_count
             normed_weights = [1 - (x / torch.sum(num_samples)) for x in num_samples]
             normed_weights = torch.FloatTensor(normed_weights).to(self.device)
-        if loss == "crossentropyloss" and class_count is not None :
-            criterion = torch.nn.CrossEntropyLoss(weight=normed_weights)
-        elif loss == "crossentropyloss" and class_count is None:
-            criterion = torch.nn.CrossEntropyLoss()
-        elif loss == "focalloss" and class_count is None:
-            criterion = torch.hub.load(
-                "adeelh/pytorch-multi-class-focal-loss",
-                model="focal_loss",
-                gamma=gamma,
-                device=self.device,
-                force_reload=False,
-                reduction="mean",
-            )
-        elif loss == "focalloss" and class_count is not None:
-            criterion = torch.hub.load(
-                "adeelh/pytorch-multi-class-focal-loss",
-                model="focal_loss",
-                gamma=gamma,
-                alpha=class_count,
-                device=self.device,
-                force_reload=False,
-                reduction="mean",
-            )
-
+        loss_ = self.__losses.get(loss)
+        if loss is None: raise RuntimeError(f'Specified loss does not exist. Available losses are: `focalloss`, `crossentropyloss`.')
+        if class_count is not None and loss == 'crossentropyloss':
+            criterion = loss_(weight=normed_weights)
+        elif class_count is not None and loss == 'focalloss':
+            criterion = loss_(gamma=gamma, alpha=normed_weights, reduction='mean', device=self.device)
+        elif class_count is None and loss == 'focalloss':
+            criterion = loss_(gamma=gamma, reduction='mean', device=self.device)
+        else:
+            criterion = loss_()
+        
         return criterion
 
     def __init_scheduler(self, scheduler_name: str, **kwargs):
@@ -206,3 +199,4 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         batch_len = predicts.size(0)
         corrects = torch.sum(predicts == target_gt).sum().item()
         return batch_len, corrects
+

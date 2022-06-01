@@ -2,6 +2,7 @@ import torch
 import time
 import os
 from torchvision import models
+from torchinfo import summary
 
 
 def set_parameter_requires_grad(model, feature_extracting):
