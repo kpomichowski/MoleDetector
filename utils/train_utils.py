@@ -150,5 +150,3 @@ def unfreeze_layers(model, layers: tuple or list) -> None:
         if layer_index in layers:
             for parameter in layer.parameters():
                 parameter.requires_grad = True
-        
- 

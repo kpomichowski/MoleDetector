@@ -11,6 +11,7 @@ from torch import optim
 from tqdm import tqdm
 from utils import train_utils
 
+
 class BaseTrainer(metaclass=abc.ABCMeta):
 
     __schedulers = {
@@ -76,7 +77,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         best_model_weights = copy.deepcopy(self.model.state_dict())
         best_validation_acc = 0.0
         is_unfreezed = False
-        
+
         train_loader = data_loaders.get("train")
         validation_loader = data_loaders.get("val")
 
@@ -92,15 +93,22 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                 f'\n\n[{datetime.now().isoformat(" ", "seconds")}]\n\n\t [INFO] Current epoch: {epoch} of {num_epochs}\n'
             )
 
-            if epoch % 5 == 0 and not is_unfreezed:
-                if self.unfreeze_weights:
-                    train_utils.unfreeze_layers(model=self.model, layers=(1, 5, 8))
-                    is_unfreezed = True
-
             training_acc, training_loss = self._train_one_epoch(
                 data_loader=train_loader, epoch=epoch
             )
-            
+
+            if epoch % 5 == 0 and not is_unfreezed:
+                if self.unfreeze_weights:
+                    layers = (5, 8)
+                    print(
+                        f"[INFO] - epoch {epoch} - unfreezing weights in the following layers: {layers}."
+                    )
+                    train_utils.unfreeze_layers(model=self.model, layers=layers)
+                    is_unfreezed = True
+                    print(
+                        f"[INFO] Total trainable params after unfreeze layers: {train_utils.count_model_parameters(self.model)[0]}."
+                    )
+
             # store the history of train accuracy and loss
             train_acc_history.append(training_acc)
             train_loss_history.append(training_loss)
@@ -198,7 +206,11 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         if not optimizer:
             raise RuntimeError(f"Inaproperiate name of an optimizer.")
         optimizer_params = self.__get_kwargs_params(obj=optimizer, **kwargs)
-        return optimizer(filter(lambda param: param.requires_grad, self.model.parameters()), lr=lr, **optimizer_params)
+        return optimizer(
+            filter(lambda param: param.requires_grad, self.model.parameters()),
+            lr=lr,
+            **optimizer_params,
+        )
 
     @staticmethod
     def __get_kwargs_params(obj, **kwargs):
