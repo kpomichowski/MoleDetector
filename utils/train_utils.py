@@ -3,6 +3,7 @@ import os
 import re
 import random
 
+from utils.sampler import StratifiedBatchSampler
 from dataset.data_set import LesionsDataset
 from torch.utils.data import WeightedRandomSampler, DataLoader
 from torchvision import transforms
@@ -17,11 +18,10 @@ def get_transforms(input_size, mode="train"):
                 transforms.RandomResizedCrop(size=256),
                 transforms.RandomHorizontalFlip(p=0.65),
                 transforms.RandomVerticalFlip(p=0.65),
-                transforms.RandomRotation(degrees=(0, 180)),
-                transforms.ColorJitter(),
-                transforms.RandomPerspective(p=0.5),
-                transforms.CenterCrop(size=input_size),
+                transforms.RandomRotation(degrees=(90, 90)),
+                transforms.ColorJitter(brightness=0.5),
                 transforms.RandomAdjustSharpness(sharpness_factor=2),
+                transforms.CenterCrop(size=input_size),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std, inplace=True),
             ]
@@ -67,7 +67,7 @@ def get_sampler(train_dataset, oversample: bool) -> None or WeightedRandomSample
 
 
 def get_data_loaders(
-    datasets: dict, batch_size: int = 64, over_sample: bool = True
+    datasets: dict, stratify: bool, batch_size: int = 64, over_sample: bool = True, 
 ) -> dict:
     loaders = {}
     modes = ["train", "val", "test"]
@@ -77,13 +77,28 @@ def get_data_loaders(
         if mode != "train":
             over_sample = False
 
-        loader = DataLoader(
-            dataset,
-            batch_size=batch_size,
-            num_workers=0,
-            drop_last=True,
-            sampler=get_sampler(dataset, over_sample),
-        )
+        if not stratify:
+            loader = DataLoader(
+                dataset,
+                batch_size=batch_size,
+                num_workers=0,
+                drop_last=True,
+                sampler=get_sampler(dataset, over_sample),
+            )
+        elif stratify and mode in ['val', 'train']:
+            loader = DataLoader(
+                dataset=dataset,
+                batch_sampler=StratifiedBatchSampler(dataset.targets, batch_size=batch_size),
+                num_workers=0,
+            )
+        else:
+            loader = DataLoader(
+                dataset, 
+                batch_size=batch_size,
+                drop_last=False,
+                shuffle=False,
+                num_workers=0,
+            )
 
         loaders[mode] = loader
 

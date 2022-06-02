@@ -3,7 +3,7 @@ import torch.nn.functional as F
 
 
 class FocalLoss(torch.nn.Module):
-    def __init__(self, gamma=2, alpha=None, reduction="mean"):
+    def __init__(self, gamma=2.0, alpha=None, reduction="mean"):
 
         if reduction not in ("mean", "sum", "none"):
             raise RuntimeError(
@@ -16,13 +16,16 @@ class FocalLoss(torch.nn.Module):
         self.reduction = reduction
 
     def forward(self, input: torch.tensor, target: torch.tensor) -> torch.tensor:
+
         logits = F.cross_entropy(input=input, target=target, reduction="none")
         pt = torch.exp(-logits)
+
         if self.alpha is not None:
             at = self.alpha.gather(0, target.data.view(-1))
             loss = at * (1 - pt) ** self.gamma * logits
         else:
             loss = (1 - pt) ** self.gamma * logits
+
         if self.reduction == "sum":
             loss = loss.sum()
         elif self.reduction == "mean":
@@ -32,7 +35,7 @@ class FocalLoss(torch.nn.Module):
 
 def focal_loss(
     device: str,
-    gamma: int = 2,
+    gamma: int = 2.0,
     reduction: str = "mean",
     alpha: torch.Tensor or None = None,
 ) -> FocalLoss:

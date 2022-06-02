@@ -49,12 +49,12 @@ def initialize_model(
     elif model == "resnet50":
         model_ft = models.resnet50(pretrained=pretrained, progress=show_progress)
         model_ft.name = "resnet50"
-        set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
+        #set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
         num_features = model_ft.fc.in_features
         model_ft.fc = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
-            torch.nn.Dropout(p=0.2),
+            torch.nn.Dropout(p=0.5),
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224

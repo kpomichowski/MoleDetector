@@ -132,6 +132,14 @@ if __name__ == "__main__":
                 action="store_true",
                 help="Alpha parameter (weights) will be applied to focal loss function.",
             )
+    
+    if hasattr(parser.parse_known_args()[0], 'oversample'):
+        if not parser.parse_known_args()[0].oversample:
+            parser.add_argument(
+                '--stratify',
+                action='store_true',
+                help='Startifies the number of samples to achieve equally distributed samples within batch.'
+            )
 
     parser.add_argument(
         "--unique",
@@ -175,7 +183,7 @@ if __name__ == "__main__":
     )
 
     data_loaders = get_data_loaders(
-        datasets=datasets, over_sample=args.oversample, batch_size=args.batch_size,
+        datasets=datasets, over_sample=args.oversample, batch_size=args.batch_size, stratify=args.stratify if hasattr(args, 'stratify') else None
     )
 
     if hasattr(args, "weighted_loss") or hasattr(args, "alpha"):
