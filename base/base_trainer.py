@@ -16,6 +16,7 @@ def get_kwargs_params(obj, **kwargs):
     object_params = list(inspect.signature(obj).parameters)
     return {k: kwargs.pop(k) for k in dict(kwargs) if k in object_params}
 
+
 class BaseTrainer(metaclass=abc.ABCMeta):
 
     __schedulers = {
@@ -73,17 +74,8 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         if class_count is not None and loss == "crossentropyloss":
             criterion = loss_(weight=normed_weights)
         elif class_count is not None and loss == "focalloss":
-            # criterion = loss_(
-            #     gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
-            # )
-            criterion = torch.hub.load(
-                'adeelh/pytorch-multi-class-focal-loss',
-                model='FocalLoss',
-                alpha=normed_weights,
-                gamma=gamma,
-                reduction='mean',
-                device=self.device,
-                force_reload=False
+            criterion = loss_(
+                gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
             )
         elif class_count is None and loss == "focalloss":
             criterion = loss_(gamma=gamma, reduction="mean", device=self.device)
@@ -157,8 +149,8 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             training_acc, training_loss = self._train_one_epoch(
                 data_loader=train_loader, epoch=epoch
             )
-            
-            if epoch % 5 == 0 and not is_unfreezed:
+
+            if epoch % 10 == 0 and not is_unfreezed:
                 if self.unfreeze_weights and self.layers:
                     self.layers = tuple(self.layers)
                     print(
@@ -232,4 +224,3 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         self, model_output: torch.tensor, targets: torch.tensor
     ) -> torch.tensor:
         return self.criterion(model_output, targets)
-

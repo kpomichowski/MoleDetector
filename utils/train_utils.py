@@ -1,7 +1,7 @@
 import torch
 import os
 import re
-
+import random
 
 from dataset.data_set import LesionsDataset
 from torch.utils.data import WeightedRandomSampler, DataLoader
@@ -148,5 +148,7 @@ def unfreeze_layers(model, layers: tuple or list) -> None:
     for layer in model.children():
         layer_index += 1
         if layer_index in layers:
-            for parameter in layer.parameters():
-                parameter.requires_grad = True
+            blocks = random.choices(layer, k=len(layers))
+            for block in blocks:
+                for parameter in block.parameters():
+                    parameter.requires_grad = True
