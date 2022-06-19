@@ -98,6 +98,13 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--factor",
+        type=float,
+        default=0.5,
+        help="Patience for ReduceLROnPlateau. Default is 0.5.",
+    )
+
+    parser.add_argument(
         "--loss",
         type=str,
         default="crossentropyloss",
