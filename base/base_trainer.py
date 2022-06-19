@@ -119,7 +119,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         return optimizer(
             filter(lambda param: param.requires_grad, self.model.parameters()),
             lr=lr,
-            weight_decay=1e-5,
+            weight_decay=1e-6,
             **optimizer_params,
         )
 
@@ -206,7 +206,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                 checkpoint = self.checkpoints
                 if epoch % checkpoint == 0:
                     self.model.optimizer = self.optimizer
-                    self.model.lr = self.lr
+                    self.model.lr = self.scheduler.get_last_lr()
                     train_utils.save_on_checkpoint(model=self.model, epoch_number=epoch)
 
             if validation_acc > best_validation_acc:
