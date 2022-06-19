@@ -43,6 +43,13 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--checkpoints",
+        type=int,
+        nargs="?",
+        help="Creates checkpoints while training the model. Weights of the model will be saved in Google Drive folder.",
+    )
+
+    parser.add_argument(
         "--image-folder",
         type=str,
         default="./data/HAM10000",
@@ -132,13 +139,13 @@ if __name__ == "__main__":
                 action="store_true",
                 help="Alpha parameter (weights) will be applied to focal loss function.",
             )
-    
-    if hasattr(parser.parse_known_args()[0], 'oversample'):
+
+    if hasattr(parser.parse_known_args()[0], "oversample"):
         if not parser.parse_known_args()[0].oversample:
             parser.add_argument(
-                '--stratify',
-                action='store_true',
-                help='Startifies the number of samples to achieve equally distributed samples within batch.'
+                "--stratify",
+                action="store_true",
+                help="Startifies the number of samples to achieve equally distributed samples within batch.",
             )
 
     parser.add_argument(
@@ -183,7 +190,10 @@ if __name__ == "__main__":
     )
 
     data_loaders = get_data_loaders(
-        datasets=datasets, over_sample=args.oversample, batch_size=args.batch_size, stratify=args.stratify if hasattr(args, 'stratify') else None
+        datasets=datasets,
+        over_sample=args.oversample,
+        batch_size=args.batch_size,
+        stratify=args.stratify if hasattr(args, "stratify") else None,
     )
 
     if hasattr(args, "weighted_loss") or hasattr(args, "alpha"):
@@ -202,8 +212,9 @@ if __name__ == "__main__":
         loss=args.loss,
         patience=args.patience,
         unfreeze_weights=args.unfreeze_weights,
-        layers=args.layers,
+        layers=args.layers if hasattr(args, "layers") else None,
         gamma=args.gamma if hasattr(args, "gamma") else None,
+        checkpoints=args.checkpoints if hasattr(args, "checkpoints") else None,
         class_count=class_count,
         device=device,
         validate=True,

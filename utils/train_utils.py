@@ -67,7 +67,7 @@ def get_sampler(train_dataset, oversample: bool) -> None or WeightedRandomSample
 
 
 def get_data_loaders(
-    datasets: dict, stratify: bool, batch_size: int = 64, over_sample: bool = True, 
+    datasets: dict, stratify: bool, batch_size: int = 64, over_sample: bool = True,
 ) -> dict:
     loaders = {}
     modes = ["train", "val", "test"]
@@ -85,15 +85,17 @@ def get_data_loaders(
                 drop_last=True,
                 sampler=get_sampler(dataset, over_sample),
             )
-        elif stratify and mode in ['val', 'train']:
+        elif stratify and mode in ["val", "train"]:
             loader = DataLoader(
                 dataset=dataset,
-                batch_sampler=StratifiedBatchSampler(dataset.targets, batch_size=batch_size),
+                batch_sampler=StratifiedBatchSampler(
+                    dataset.targets, batch_size=batch_size
+                ),
                 num_workers=0,
             )
         else:
             loader = DataLoader(
-                dataset, 
+                dataset,
                 batch_size=batch_size,
                 drop_last=False,
                 shuffle=False,

@@ -3,6 +3,7 @@ import time
 import torch
 import copy
 import abc
+import os
 
 from losses import losses
 from datetime import datetime
@@ -66,6 +67,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             num_samples = class_count
             normed_weights = [1 - (x / torch.sum(num_samples)) for x in num_samples]
             normed_weights = torch.FloatTensor(normed_weights).to(self.device)
+
         loss_ = self.__losses.get(loss)
         if loss is None:
             raise RuntimeError(
@@ -130,6 +132,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         best_model_weights = copy.deepcopy(self.model.state_dict())
         best_validation_acc = 0.0
         is_unfreezed = False
+        unfrozen = []
 
         train_loader = data_loaders.get("train")
         validation_loader = data_loaders.get("val")
@@ -150,12 +153,13 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                 data_loader=train_loader, epoch=epoch
             )
 
-            if epoch % 10 == 0 and not is_unfreezed:
+            if epoch % 20 == 0 and not is_unfreezed:
                 if self.unfreeze_weights and self.layers:
                     self.layers = tuple(self.layers)
                     print(
                         f"\n[INFO] - epoch {epoch} - unfreezing weights in the following layers: {self.layers}."
                     )
+                    time.sleep(3)
                     train_utils.unfreeze_layers(model=self.model, layers=self.layers)
                     is_unfreezed = True
                     print(
@@ -185,6 +189,41 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                     ),
                     epoch=epoch,
                 )
+
+            if self.kwargs.get("checkpoints"):
+                checkpoint = self.kwargs.get("checkpoints")
+                model = (self.model,)
+                model_name = (self.model.name,)
+                model_state_dict = self.model.state_dict()
+                optimizer_state_dict = (self.model.optimizer_state_dict(),)
+                _epoch = epoch
+                _lr = self.lr
+                if epoch % checkpoint == 0:
+                    try:
+                        import google.colab
+
+                        USING_COLAB = True
+                    except:
+                        USING_COLAB = False
+
+                    filename = (
+                        f"{model_name}_{_epoch}_{int(time.time())}_checkpoint.pth"
+                    )
+                    path = (
+                        f"./model_weights/" + filename
+                        if not USING_COLAB
+                        else f"/content/drive/My Drive/HAM10000_checkpoints/" + filename
+                    )
+                    torch.save(
+                        {
+                            "model": model,
+                            "model_state_dict": model_state_dict,
+                            "optimizer_state_dict": optimizer_state_dict,
+                            "epoch": _epoch,
+                            "lr": _lr,
+                        },
+                        path,
+                    )
 
             if validation_acc > best_validation_acc:
                 best_validation_acc = validation_acc
