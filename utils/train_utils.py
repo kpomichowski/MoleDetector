@@ -2,6 +2,7 @@ import torch
 import os
 import re
 import random
+import time
 
 from utils.sampler import StratifiedBatchSampler
 from dataset.data_set import LesionsDataset
@@ -169,3 +170,39 @@ def unfreeze_layers(model, layers: tuple or list) -> None:
             for block in blocks:
                 for parameter in block.parameters():
                     parameter.requires_grad = True
+
+
+def save_on_checkpoint(model, epoch_number: int) -> None:
+
+    model_name = model.name
+    model_state_dict = model.state_dict()
+    optimizer_state_dict = model.optimizer.state_dict()
+    _epoch = epoch_number
+    _lr = model.lr
+
+    try:
+        import google.colab
+        USING_COLAB = True
+    except:
+        USING_COLAB = False
+
+    filename = f"{model_name}_{_epoch}_{int(time.time())}_checkpoint.pth"
+    path = (
+        f"./model_weights/" + filename
+        if not USING_COLAB
+        else f"/content/drive/My Drive/HAM10000_checkpoints/" + filename
+    )
+
+    if os.path.exists(path):
+        torch.save(
+            {
+                "model": model,
+                "model_state_dict": model_state_dict,
+                "optimizer_state_dict": optimizer_state_dict,
+                "epoch": _epoch,
+                "lr": _lr,
+            },
+            path,
+        )
+
+    print(f"[INFO] Succesfully saved checkpoint to the {path} at epoch {epoch_number}.")

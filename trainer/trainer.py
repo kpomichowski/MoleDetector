@@ -35,7 +35,6 @@ class Trainer(base_trainer.BaseTrainer):
             targets_ = torch.argmax(targets, dim=1)
 
             logits = self.model(inputs)
-
             loss = self._compute_loss(model_output=logits, targets=targets_)
 
             _, predictions = torch.max(logits, dim=1)

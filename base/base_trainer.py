@@ -59,6 +59,8 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         self.unfreeze_weights = unfreeze_weights
         if self.unfreeze_weights:
             self.layers = layers
+        
+        self.checkpoints = kwargs.get('checkpoints')
 
     def __init_loss(
         self, loss: str, class_count: torch.tensor or None, gamma: int = None
@@ -76,8 +78,17 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         if class_count is not None and loss == "crossentropyloss":
             criterion = loss_(weight=normed_weights)
         elif class_count is not None and loss == "focalloss":
-            criterion = loss_(
-                gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
+            # criterion = loss_(
+            #     gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
+            # )
+            criterion = torch.hub.load(
+                'adeelh/pytorch-multi-class-focal-loss',
+                model='focal_loss',
+                gamma=gamma,
+                alpha=normed_weights,
+                reduction='mean',
+                device=self.device,
+                verbose=True,
             )
         elif class_count is None and loss == "focalloss":
             criterion = loss_(gamma=gamma, reduction="mean", device=self.device)
@@ -190,40 +201,11 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                     epoch=epoch,
                 )
 
-            if self.kwargs.get("checkpoints"):
-                checkpoint = self.kwargs.get("checkpoints")
-                model = (self.model,)
-                model_name = (self.model.name,)
-                model_state_dict = self.model.state_dict()
-                optimizer_state_dict = (self.model.optimizer_state_dict(),)
-                _epoch = epoch
-                _lr = self.lr
+            if self.checkpoints:
+                checkpoint = self.checkpoints
                 if epoch % checkpoint == 0:
-                    try:
-                        import google.colab
-
-                        USING_COLAB = True
-                    except:
-                        USING_COLAB = False
-
-                    filename = (
-                        f"{model_name}_{_epoch}_{int(time.time())}_checkpoint.pth"
-                    )
-                    path = (
-                        f"./model_weights/" + filename
-                        if not USING_COLAB
-                        else f"/content/drive/My Drive/HAM10000_checkpoints/" + filename
-                    )
-                    torch.save(
-                        {
-                            "model": model,
-                            "model_state_dict": model_state_dict,
-                            "optimizer_state_dict": optimizer_state_dict,
-                            "epoch": _epoch,
-                            "lr": _lr,
-                        },
-                        path,
-                    )
+                    self.model.optimizer = self.optimizer
+                    train_utils.save_on_checkpoint(model=self.model, epoch_number=epoch)
 
             if validation_acc > best_validation_acc:
                 best_validation_acc = validation_acc
