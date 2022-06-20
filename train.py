@@ -226,6 +226,7 @@ if __name__ == "__main__":
         lr=args.lr,
         loss=args.loss,
         patience=args.patience,
+        factor=args.factor if hasattr(args, 'factor') else None,
         unfreeze_weights=args.unfreeze_weights,
         layers=args.layers if hasattr(args, "layers") else None,
         gamma=args.gamma if hasattr(args, "gamma") else None,

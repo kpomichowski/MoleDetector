@@ -61,7 +61,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         self.unfreeze_weights = unfreeze_weights
         if self.unfreeze_weights:
             self.layers = layers
-
+        
         self.checkpoints = kwargs.get("checkpoints")
 
     def __init_loss(
@@ -139,8 +139,8 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             optimizer = optimizer(
                 filter(lambda param: param.requires_grad, self.model.parameters()),
                 lr=lr,
+                momentum=optimizer_params.get('momentum', 0.9),
                 weight_decay=1e-6,
-                momentum=0.9,
                 **optimizer_params,
             )
         else:
