@@ -80,17 +80,8 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         if class_count is not None and loss == "crossentropyloss":
             criterion = loss_(weight=normed_weights)
         elif class_count is not None and loss == "focalloss":
-            # criterion = loss_(
-            #     gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
-            # )
-            criterion = torch.hub.load(
-                "adeelh/pytorch-multi-class-focal-loss",
-                model="focal_loss",
-                gamma=gamma,
-                alpha=normed_weights,
-                reduction="mean",
-                device=self.device,
-                verbose=True,
+            criterion = loss_(
+                gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
             )
         elif class_count is None and loss == "focalloss":
             criterion = loss_(gamma=gamma, reduction="mean", device=self.device)
@@ -116,7 +107,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                 )
             elif scheduler_name == "cosine":
                 scheduler = scheduler(
-                    self.optimizer, T_0=10, verbose=True, **scheduler_params,
+                    self.optimizer, T_0=10, T_mult=1, verbose=True, **scheduler_params,
                 )
             else:
                 raise NotImplementedError
@@ -132,14 +123,14 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             optimizer = optimizer(
                 filter(lambda param: param.requires_grad, self.model.parameters()),
                 lr=lr,
-                weight_decay=1e-6,
+                weight_decay=1e-5,
                 **optimizer_params,
             )
         elif optimizer_name == "sgd":
             optimizer = optimizer(
                 filter(lambda param: param.requires_grad, self.model.parameters()),
                 lr=lr,
-                momentum=optimizer_params.get('momentum', 0.9),
+                momentum=optimizer_params.pop('momentum', 0.9),
                 weight_decay=1e-6,
                 **optimizer_params,
             )

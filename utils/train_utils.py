@@ -189,7 +189,7 @@ def save_on_checkpoint(model, epoch_number: int) -> None:
     path = (
         f"./model_weights/" + filename
         if not USING_COLAB
-        else f"/content/drive/My Drive/HAM10000_checkpoints/" + filename
+        else f"/content/drive/MyDrive/HAM10000_checkpoints/" + filename
     )
 
     if os.path.exists(path):
@@ -203,5 +203,4 @@ def save_on_checkpoint(model, epoch_number: int) -> None:
             },
             path,
         )
-
-    print(f"[INFO] Succesfully saved checkpoint to the {path} at epoch {epoch_number}.")
+        print(f"[INFO] Succesfully saved checkpoint to the {path} at epoch {epoch_number}.")

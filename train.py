@@ -203,7 +203,7 @@ if __name__ == "__main__":
         input_size=input_size,
         unique=args.unique,
     )
-
+     
     data_loaders = get_data_loaders(
         datasets=datasets,
         over_sample=args.oversample,
@@ -231,7 +231,7 @@ if __name__ == "__main__":
         gamma=args.gamma if hasattr(args, "gamma") else None,
         checkpoints=args.checkpoints if hasattr(args, "checkpoints") else None,
         factor=args.factor if hasattr(args, 'factor') else None,
-        momentum=args.factor if hasattr(args, 'momentum') else None
+        momentum=args.factor if hasattr(args, 'momentum') else None,
         class_count=class_count,
         device=device,
         validate=True,
