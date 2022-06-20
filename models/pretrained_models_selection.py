@@ -31,7 +31,7 @@ def initialize_model(
         model_ft.classifier = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
-            torch.nn.Dropout(p=0.4),
+            torch.nn.Dropout(p=0.5),
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224
@@ -43,7 +43,7 @@ def initialize_model(
         model_ft.classifier = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
-            torch.nn.Dropout(p=0.2),
+            torch.nn.Dropout(p=0.5),
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224
