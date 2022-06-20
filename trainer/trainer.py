@@ -24,6 +24,7 @@ class Trainer(base_trainer.BaseTrainer):
         self.model.train()
 
         running_loss, correct_total = 0, 0
+        iters = len(data_loader)
 
         for batch_index, samples in enumerate(data_loader):
 
@@ -44,6 +45,9 @@ class Trainer(base_trainer.BaseTrainer):
             loss.backward()
             self.optimizer.step()
             self.optimizer.zero_grad()
+
+            if self.scheduler.name == "cosine":
+                self.scheduler.step(epoch + batch_index / iters)
 
             batch_length, correct_predicts = self._compute_acc(
                 predicts=predictions, target_gt=targets_
@@ -98,8 +102,8 @@ class Trainer(base_trainer.BaseTrainer):
             f"\n\t [INFO] Epoch: {epoch} | validation epoch loss: {val_loss} | validation epoch acc.: {val_acc} |"
         )
 
-        if self.scheduler:
-            self.scheduler.step(loss)
+        if self.scheduler.name == "plateau":
+            self.scheduler.step(val_loss)
 
         return val_acc, val_loss
 

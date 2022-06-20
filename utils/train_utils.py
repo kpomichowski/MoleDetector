@@ -180,6 +180,7 @@ def save_on_checkpoint(model, epoch_number: int) -> None:
 
     try:
         import google.colab
+
         USING_COLAB = True
     except:
         USING_COLAB = False

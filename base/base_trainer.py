@@ -22,10 +22,12 @@ class BaseTrainer(metaclass=abc.ABCMeta):
 
     __schedulers = {
         "plateau": optim.lr_scheduler.ReduceLROnPlateau,
+        "cosine": optim.lr_scheduler.CosineAnnealingWarmRestarts,
     }
 
     __optimizers = {
         "adam": optim.Adam,
+        "sgd": optim.SGD,
     }
 
     __losses = {
@@ -59,8 +61,8 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         self.unfreeze_weights = unfreeze_weights
         if self.unfreeze_weights:
             self.layers = layers
-        
-        self.checkpoints = kwargs.get('checkpoints')
+
+        self.checkpoints = kwargs.get("checkpoints")
 
     def __init_loss(
         self, loss: str, class_count: torch.tensor or None, gamma: int = None
@@ -82,11 +84,11 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             #     gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
             # )
             criterion = torch.hub.load(
-                'adeelh/pytorch-multi-class-focal-loss',
-                model='focal_loss',
+                "adeelh/pytorch-multi-class-focal-loss",
+                model="focal_loss",
                 gamma=gamma,
                 alpha=normed_weights,
-                reduction='mean',
+                reduction="mean",
                 device=self.device,
                 verbose=True,
             )
@@ -103,25 +105,48 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             scheduler_params = get_kwargs_params(scheduler, **kwargs)
             if not scheduler:
                 raise RuntimeError(f"Inaproperiate name of a scheduler.")
-            return scheduler(
-                self.optimizer,
-                verbose=True,
-                factor=scheduler_params.pop("factor", 0.2),
-                patience=scheduler_params.pop("patience", 5),
-                **scheduler_params,
-            )
+
+            if scheduler_name == "plateau":
+                scheduler = scheduler(
+                    self.optimizer,
+                    verbose=True,
+                    factor=scheduler_params.pop("factor", 0.2),
+                    patience=scheduler_params.pop("patience", 5),
+                    **scheduler_params,
+                )
+            elif scheduler_name == "cosine":
+                scheduler = scheduler(
+                    self.optimizer, T_0=10, verbose=True, **scheduler_params,
+                )
+            else:
+                raise NotImplementedError
+            scheduler.name = scheduler_name
+            return scheduler
 
     def __init_optimizer(self, optimizer_name, lr, **kwargs):
         optimizer = self.__optimizers.get(optimizer_name.lower())
         if not optimizer:
             raise RuntimeError(f"Inaproperiate name of an optimizer.")
         optimizer_params = get_kwargs_params(obj=optimizer, **kwargs)
-        return optimizer(
-            filter(lambda param: param.requires_grad, self.model.parameters()),
-            lr=lr,
-            weight_decay=1e-6,
-            **optimizer_params,
-        )
+        if optimizer_name == "adam":
+            optimizer = optimizer(
+                filter(lambda param: param.requires_grad, self.model.parameters()),
+                lr=lr,
+                weight_decay=1e-6,
+                **optimizer_params,
+            )
+        elif optimizer_name == "sgd":
+            optimizer = optimizer(
+                filter(lambda param: param.requires_grad, self.model.parameters()),
+                lr=lr,
+                weight_decay=1e-6,
+                momentum=0.9,
+                **optimizer_params,
+            )
+        else:
+            raise NotImplementedError
+
+        return optimizer
 
     def train(self, data_loaders: dict, num_epochs: int):
         self.model.to(self.device)
@@ -206,7 +231,10 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                 checkpoint = self.checkpoints
                 if epoch % checkpoint == 0:
                     self.model.optimizer = self.optimizer
-                    self.model.lr = self.scheduler.get_last_lr()
+                    if self.scheduler.name == "cosine":
+                        self.model.lr = self.scheduler.get_last_lr()
+                    else:
+                        self.model.lr = self.optimizer.param_groups[0]["lr"]
                     train_utils.save_on_checkpoint(model=self.model, epoch_number=epoch)
 
             if validation_acc > best_validation_acc:

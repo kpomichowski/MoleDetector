@@ -81,13 +81,13 @@ if __name__ == "__main__":
         "--optimizer",
         type=str,
         default="adam",
-        help="The optimizer name to update the weights of model.\nAvailable optimizers: `adam`.",
+        help="The optimizer name to update the weights of model.\nAvailable optimizers: `adam`, `sgd`.",
     )
     parser.add_argument(
         "--scheduler",
         type=str,
         default="plateau",
-        help="Scheduler name to change the value of learning rate.\nAvailable schedulers: `plateau`.",
+        help="Scheduler name to change the value of learning rate.\nAvailable schedulers: `plateau`, `cosine`.",
     )
 
     parser.add_argument(
@@ -124,6 +124,14 @@ if __name__ == "__main__":
                 type=int,
                 nargs="+",
                 help="Specify which in which layers, weights should be unfrozen. Example: `--layers 2 3`. In 2nd and 3rd layers weights will be unfrozen.",
+            )
+
+    if hasattr(parser.parse_known_args()[0], "optimizer"):
+        if parser.parse_known_args()[0].optimizer.lower() == "sgd":
+            parser.add_argument(
+                "--momentum",
+                type=float,
+                help="Momentum factor using Stochastic Gradient Descent optimizer.",
             )
 
     if hasattr(parser.parse_known_args()[0], "loss"):
