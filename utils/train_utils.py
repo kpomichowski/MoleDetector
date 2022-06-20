@@ -16,13 +16,11 @@ def get_transforms(input_size, mode="train"):
     if mode == "train":
         composed_transforms = transforms.Compose(
             [
-                transforms.RandomResizedCrop(size=256),
+                transforms.Resize((input_size, input_size)),
                 transforms.RandomHorizontalFlip(p=0.65),
                 transforms.RandomVerticalFlip(p=0.65),
-                transforms.RandomRotation(degrees=(90, 90)),
-                transforms.ColorJitter(brightness=0.5),
-                transforms.RandomAdjustSharpness(sharpness_factor=2),
-                transforms.CenterCrop(size=input_size),
+                transforms.RandomRotation(35),
+                transforms.ColorJitter(brightness=0.1, contrast=0.1, hue=0.1),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std, inplace=True),
             ]
@@ -30,7 +28,7 @@ def get_transforms(input_size, mode="train"):
     else:
         composed_transforms = transforms.Compose(
             [
-                transforms.Resize(input_size),
+                transforms.Resize((input_size, input_size)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std, inplace=True),
             ]
