@@ -61,8 +61,9 @@ def initialize_model(
         )
         input_size = 224
     elif model == "efficientnet":
-        model_ft = EfficientNet.from_pretrained("efficientnet-b0", num_classes=7)
-        model_ft.name = "EfficientNetB4"
+        model_ft = EfficientNet.from_pretrained("efficientnet-b5", num_classes=7)
+        model_ft.name = "EfficientNetB5"
+        model_ft._dropout = torch.nn.Dropout(p=0.5)
         input_size = 224
     else:
         raise RuntimeError(f"Inaproperiate model name.")
