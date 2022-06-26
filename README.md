@@ -7,6 +7,10 @@
 PyTorch software for multiclassification of the skin cancer.
 File `train.py` provides all functionalities for training.
 
+The HAM10000 dataset is strong imbalanced, so some methods were applied (see `Training info` section):
+
+![Data class distribution](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/data_distribution.png)
+
 # `train.py` usage:
 
 Type command `python train.py --help` to get the following available instructions:
