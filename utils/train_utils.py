@@ -1,10 +1,15 @@
 import torch
 import os
 import re
+<<<<<<< HEAD
 import random
 import time
 
 from utils.sampler import StratifiedBatchSampler
+=======
+
+
+>>>>>>> master
 from dataset.data_set import LesionsDataset
 from torch.utils.data import WeightedRandomSampler, DataLoader
 from torchvision import transforms
@@ -16,11 +21,22 @@ def get_transforms(input_size, mode="train"):
     if mode == "train":
         composed_transforms = transforms.Compose(
             [
+<<<<<<< HEAD
                 transforms.Resize((input_size, input_size)),
                 transforms.RandomHorizontalFlip(p=0.65),
                 transforms.RandomVerticalFlip(p=0.65),
                 transforms.RandomRotation(35),
                 transforms.ColorJitter(brightness=0.1, contrast=0.1, hue=0.1),
+=======
+                transforms.RandomResizedCrop(size=256),
+                transforms.RandomHorizontalFlip(p=0.65),
+                transforms.RandomVerticalFlip(p=0.65),
+                transforms.RandomRotation(degrees=(0, 180)),
+                transforms.ColorJitter(),
+                transforms.RandomPerspective(p=0.5),
+                transforms.CenterCrop(size=input_size),
+                transforms.RandomAdjustSharpness(sharpness_factor=2),
+>>>>>>> master
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std, inplace=True),
             ]
@@ -28,7 +44,11 @@ def get_transforms(input_size, mode="train"):
     else:
         composed_transforms = transforms.Compose(
             [
+<<<<<<< HEAD
                 transforms.Resize((input_size, input_size)),
+=======
+                transforms.Resize(input_size),
+>>>>>>> master
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std, inplace=True),
             ]
@@ -66,7 +86,11 @@ def get_sampler(train_dataset, oversample: bool) -> None or WeightedRandomSample
 
 
 def get_data_loaders(
+<<<<<<< HEAD
     datasets: dict, stratify: bool, batch_size: int = 64, over_sample: bool = True
+=======
+    datasets: dict, batch_size: int = 64, over_sample: bool = True
+>>>>>>> master
 ) -> dict:
     loaders = {}
     modes = ["train", "val", "test"]
@@ -76,6 +100,7 @@ def get_data_loaders(
         if mode != "train":
             over_sample = False
 
+<<<<<<< HEAD
         if not stratify:
             loader = DataLoader(
                 dataset,
@@ -100,6 +125,15 @@ def get_data_loaders(
                 shuffle=False,
                 num_workers=0,
             )
+=======
+        loader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            num_workers=0,
+            drop_last=True,
+            sampler=get_sampler(dataset, over_sample),
+        )
+>>>>>>> master
 
         loaders[mode] = loader
 
@@ -157,6 +191,7 @@ def count_classes(num_classes: int, dataset: LesionsDataset):
     for sample in dataset:
         labels += sample.get("target")
     return labels
+<<<<<<< HEAD
 
 
 def unfreeze_layers(model, layers: tuple or list) -> None:
@@ -206,3 +241,5 @@ def save_on_checkpoint(model, epoch_number: int) -> None:
         print(
             f"[INFO] Succesfully saved checkpoint to the {path} at epoch {epoch_number}."
         )
+=======
+>>>>>>> master

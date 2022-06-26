@@ -76,6 +76,8 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 
 ### Training info:
  * Model was trained without oversampling the images (option --oversample duplicates the augemented samples along the batch with PyTorch `WeightedRandomSampler`),
+ * For each band in `training`, `validation` data, mean, standard deviation of each channel was calculated,
+ * On training data, there were applied transformations such as: `RandomHorizontalFlip`, `RandomVerticalFlip`, `RandomRotation`, `ColorJitter`,
  * Loss function `FocalLoss` [link](https://arxiv.org/abs/1708.02002v2) was implemented, because of the imbalanced dataset.
  * Loss function was weighted for each class due to data imbalance (parameter `--alpha`) with parameter `--gamma 2`.
  * Different models were tested: `VGG19`, `ResNet50`, `EfficientNetB0` (the best option),

@@ -108,7 +108,11 @@ def plot_metrics(
     if metric_type == "avg":
         metrics = metrics.get(metric_type)
         data = {
+<<<<<<< HEAD
             "metrics": ["Accuracy", "Precision", "Recall", "F1 score"],
+=======
+            "metrics": ["Accuracy", "Precision", "Recall", "F1 score",],
+>>>>>>> master
             "scores": [metrics[-2], metrics[1], metrics[0], metrics[-1]],
         }
         sns.barplot(x="metrics", y="scores", data=data)
