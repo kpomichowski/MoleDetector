@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-from matplotlib.pyplot import axis
->>>>>>> master
 import torch
 import numpy as np
 
@@ -28,10 +24,7 @@ class Trainer(base_trainer.BaseTrainer):
         self.model.train()
 
         running_loss, correct_total = 0, 0
-<<<<<<< HEAD
         iters = len(data_loader)
-=======
->>>>>>> master
 
         for batch_index, samples in enumerate(data_loader):
 
@@ -42,20 +35,12 @@ class Trainer(base_trainer.BaseTrainer):
             # Decoding one-hot encoded target
             targets_ = torch.argmax(targets, dim=1)
 
-<<<<<<< HEAD
             logits = self.model(inputs)
-=======
-            self.optimizer.zero_grad()
-
-            logits = self.model(inputs)
-
->>>>>>> master
             loss = self._compute_loss(model_output=logits, targets=targets_)
 
             _, predictions = torch.max(logits, dim=1)
 
             running_loss += loss.item() * inputs.size(0)
-<<<<<<< HEAD
 
             loss.backward()
             self.optimizer.step()
@@ -63,10 +48,6 @@ class Trainer(base_trainer.BaseTrainer):
 
             if self.scheduler.name == "cosine":
                 self.scheduler.step(epoch + batch_index / iters)
-=======
-            loss.backward()
-            self.optimizer.step()
->>>>>>> master
 
             batch_length, correct_predicts = self._compute_acc(
                 predicts=predictions, target_gt=targets_
@@ -121,13 +102,8 @@ class Trainer(base_trainer.BaseTrainer):
             f"\n\t [INFO] Epoch: {epoch} | validation epoch loss: {val_loss} | validation epoch acc.: {val_acc} |"
         )
 
-<<<<<<< HEAD
         if self.scheduler.name == "plateau":
             self.scheduler.step(val_loss)
-=======
-        if self.scheduler:
-            self.scheduler.step(loss)
->>>>>>> master
 
         return val_acc, val_loss
 
@@ -157,27 +133,19 @@ class Trainer(base_trainer.BaseTrainer):
         TP = np.diag(confusion_matrix)
         FP = np.sum(confusion_matrix, axis=0) - TP
         FN = np.sum(confusion_matrix, axis=1) - TP
-<<<<<<< HEAD
         recall = TP / (TP + FN)
         F1_score = TP / (TP + 0.5 * (FP + FN))
-        precision = np.divide(TP, TP + FP, out=np.zeros_like(TP, dtype=np.float16), where=((TP != 0) & (FP != 0)))
+        precision = np.divide(
+            TP,
+            TP + FP,
+            out=np.zeros_like(TP, dtype=np.float16),
+            where=((TP != 0) & (FP != 0)),
+        )
         accuracy = np.divide(
             np.diag(confusion_matrix),
             np.sum(confusion_matrix, axis=1),
             where=np.sum(confusion_matrix, axis=1) != 0,
         )
-=======
-        TN = []
-        for i in range(num_classes):
-            temp = np.delete(confusion_matrix, i, axis=0)
-            temp = np.delete(temp, i, axis=1)
-            TN.append(sum(sum(temp)))
-
-        recall = TP / (TP + FN)
-        precision = TP / (TP + FP)
-        F1_score = TP / (TP + 0.5 * (FP + FN))
-        accuracy = (TP + TN) / (TP + FP + FN + TN)
->>>>>>> master
 
         print(f"Confusion matrix:\n", confusion_matrix)
         print(f"Per class acc.: {accuracy}")
@@ -202,17 +170,9 @@ class Trainer(base_trainer.BaseTrainer):
         return metrics
 
     def __compute_metrics(
-<<<<<<< HEAD
         self, correct_total: int, running_loss: float, total_items: int
     ) -> tuple:
         acc = 100 * (correct_total / total_items)
         r_loss = running_loss / total_items
         accuracy, loss = np.round(acc, 4), np.round(r_loss, 4)
-=======
-        self, correct_total: int, running_loss: float, total_items: int,
-    ) -> tuple:
-        acc = 100 * correct_total / total_items
-        r_loss = running_loss / total_items
-        accuracy, loss = np.round(acc, 3), np.round(r_loss, 3)
->>>>>>> master
         return accuracy, loss

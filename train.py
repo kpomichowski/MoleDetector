@@ -9,14 +9,7 @@ from utils.train_utils import (
     count_model_parameters,
 )
 
-<<<<<<< HEAD
 from models.pretrained_models_selection import initialize_model, save_model
-=======
-from models.pretrained_models_selection import (
-    initialize_model,
-    save_model,
-)
->>>>>>> master
 
 from utils.plots import plot_metrics, plot_confusion_matrix
 
@@ -30,11 +23,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-<<<<<<< HEAD
         "--csv", type=str, default="./data/", help="Source path to .csv data."
-=======
-        "--csv", type=str, default="./data/", help="Source path to .csv data.",
->>>>>>> master
     )
 
     parser.add_argument(
@@ -51,18 +40,14 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-<<<<<<< HEAD
         "--checkpoints",
         type=int,
         nargs="?",
-        help="Creates checkpoints while training the model. Weights of the model will be saved in Google Drive folder.",
+        help="Creates checkpoints while training the model. Weights of the model will be saved in Google Drive folder, if training is not perfomer at Google Colab, the weights will be saved in `model_weights` folder.",
     )
 
     parser.add_argument(
         "--image-folder",
-=======
-        "--image_folder",
->>>>>>> master
         type=str,
         default="./data/HAM10000",
         help="Source path to folder that contains skin cancer images.",
@@ -72,11 +57,7 @@ if __name__ == "__main__":
         "--model", type=str, default="vgg19", help="Model to train and evaluate data."
     )
     parser.add_argument(
-<<<<<<< HEAD
         "--batch-size", type=int, default=32, help="The size of batches in dataloader."
-=======
-        "--batch_size", type=int, default=32, help="The size of batches in dataloader."
->>>>>>> master
     )
     parser.add_argument(
         "--lr", type=float, default=0.001, help="The default learning rate value."
@@ -97,28 +78,19 @@ if __name__ == "__main__":
         "--optimizer",
         type=str,
         default="adam",
-<<<<<<< HEAD
         help="The optimizer name to update the weights of model.\nAvailable optimizers: `adam`, `sgd`.",
-=======
-        help="The optimizer name to update the weights of model.\nAvailable optimizers: `adam`.",
->>>>>>> master
     )
     parser.add_argument(
         "--scheduler",
         type=str,
         default="plateau",
-<<<<<<< HEAD
         help="Scheduler name to change the value of learning rate.\nAvailable schedulers: `plateau`, `cosine`.",
-=======
-        help="Scheduler name to change the value of learning rate.\nAvailable schedulers: `plateau`.",
->>>>>>> master
     )
 
     parser.add_argument(
         "--patience",
         type=int,
         default=5,
-<<<<<<< HEAD
         help="Patience for ReduceLROnPlateau. Default value is 5.",
     )
 
@@ -127,9 +99,6 @@ if __name__ == "__main__":
         type=float,
         default=0.5,
         help="Patience for ReduceLROnPlateau. Default value is 0.5.",
-=======
-        help="Patience for ReduceLROnPlateau. Default is 5.",
->>>>>>> master
     )
 
     parser.add_argument(
@@ -139,7 +108,6 @@ if __name__ == "__main__":
         help="Default: CrossEntropyLoss. Possible loss functions: `crossentropyloss`, `focalloss`.",
     )
 
-<<<<<<< HEAD
     parser.add_argument(
         "--unfreeze-weights",
         action="store_true",
@@ -163,28 +131,14 @@ if __name__ == "__main__":
                 help="Momentum factor using Stochastic Gradient Descent optimizer.",
             )
 
-=======
->>>>>>> master
     if hasattr(parser.parse_known_args()[0], "loss"):
 
         if parser.parse_known_args()[0].loss.lower() == "crossentropyloss":
             parser.add_argument(
-<<<<<<< HEAD
                 "--weighted-loss",
                 action="store_true",
                 help="Use weights for CrossEntropyLoss.",
             )
-=======
-                "--weighted_loss",
-                action="store_true",
-                help="Use weights for CrossEntropyLoss.",
-            )
-            parser.add_argument(
-                "--no-weighted-loss",
-                action="store_false",
-                help="Do not use weights for CrossEntropyLoss.",
-            )
->>>>>>> master
         else:
             parser.add_argument(
                 "--gamma",
@@ -197,7 +151,6 @@ if __name__ == "__main__":
                 action="store_true",
                 help="Alpha parameter (weights) will be applied to focal loss function.",
             )
-<<<<<<< HEAD
 
     if hasattr(parser.parse_known_args()[0], "oversample"):
         if not parser.parse_known_args()[0].oversample:
@@ -205,13 +158,6 @@ if __name__ == "__main__":
                 "--stratify",
                 action="store_true",
                 help="Startifies the number of samples to achieve equally distributed samples within batch.",
-=======
-            parser.add_argument(
-                "--no-alpha",
-                action="store_false",
-                dest="alpha",
-                help="Weight won't applied to focal loss function.",
->>>>>>> master
             )
 
     parser.add_argument(
@@ -220,16 +166,6 @@ if __name__ == "__main__":
         help="Load datasets with the unique lesion IDs.",
     )
 
-<<<<<<< HEAD
-=======
-    parser.add_argument(
-        "--no-unique",
-        action="store_false",
-        dest="unique",
-        help="Dataset will be filled with the repetetive mole lesions.",
-    )
-
->>>>>>> master
     args = parser.parse_args()
 
     """
@@ -266,14 +202,10 @@ if __name__ == "__main__":
     )
 
     data_loaders = get_data_loaders(
-<<<<<<< HEAD
         datasets=datasets,
         over_sample=args.oversample,
         batch_size=args.batch_size,
         stratify=args.stratify if hasattr(args, "stratify") else None,
-=======
-        datasets=datasets, over_sample=args.oversample, batch_size=args.batch_size,
->>>>>>> master
     )
 
     if hasattr(args, "weighted_loss") or hasattr(args, "alpha"):
@@ -291,16 +223,12 @@ if __name__ == "__main__":
         lr=args.lr,
         loss=args.loss,
         patience=args.patience,
-<<<<<<< HEAD
         unfreeze_weights=args.unfreeze_weights,
         layers=args.layers if hasattr(args, "layers") else None,
         gamma=args.gamma if hasattr(args, "gamma") else None,
         checkpoints=args.checkpoints if hasattr(args, "checkpoints") else None,
         factor=args.factor if hasattr(args, "factor") else None,
         momentum=args.factor if hasattr(args, "momentum") else None,
-=======
-        gamma=args.gamma if hasattr(args, "gamma") else None,
->>>>>>> master
         class_count=class_count,
         device=device,
         validate=True,

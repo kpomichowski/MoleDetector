@@ -24,12 +24,9 @@ class LesionsDataset(Dataset):
         self.root_dir = root_dir
         self.transform = transform
         self.transform_target = transform_target
-<<<<<<< HEAD
         self.targets = self.lesion_dataset.loc[:, "lesion_type"].to_numpy(
             dtype=np.int64
         )
-=======
->>>>>>> master
 
     def __getitem__(self, item_index):
 
