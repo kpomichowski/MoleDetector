@@ -80,9 +80,9 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 
 ### Training information:
 
-| Training | Validation |
+| Train | Validation |
 |:--------:|:----------:|
-| ~85%     |~90%        |
+| ~88%     |~90%        |
 
 
 # Training plots:
