@@ -96,7 +96,7 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
  * Optimizer: `Adam`, with `weight_decay`: 1e-4
  * Hyperparameters: `batch_size`: 32, `learning_rate`: 0.00001, `epochs`: 60.
 
-### Training information:
+### Accuracy during training:
 
 | Train | Validation |
 |:--------:|:----------:|
