@@ -74,28 +74,11 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         if class_count is not None and loss == "crossentropyloss":
             criterion = loss_(weight=normed_weights)
         elif class_count is not None and loss == "focalloss":
-            # criterion = loss_(
-            #     gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
-            # )
-            criterion = torch.hub.load(
-                "adeelh/pytorch-multi-class-focal-loss",
-                model="FocalLoss",
-                alpha=normed_weights,
-                gamma=gamma,
-                reduction="mean",
-                force_reload=False,
-                verbose=True,
+            criterion = loss_(
+                gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
             )
         elif class_count is None and loss == "focalloss":
-            # criterion = loss_(gamma=gamma, reduction="mean", device=self.device)
-            criterion = torch.hub.load(
-                "adeelh/pytorch-multi-class-focal-loss",
-                alpha=None,
-                gamma=gamma,
-                reduction="mean",
-                force_reload=False,
-                verbose=True,
-            )
+            criterion = loss_(gamma=gamma, reduction="mean", device=self.device)
         else:
             criterion = loss_()
 
