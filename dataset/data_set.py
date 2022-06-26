@@ -1,6 +1,7 @@
 import os
 import torch
 import pandas as pd
+import numpy as np
 
 from PIL import Image
 from torch.nn.functional import one_hot
@@ -23,6 +24,12 @@ class LesionsDataset(Dataset):
         self.root_dir = root_dir
         self.transform = transform
         self.transform_target = transform_target
+<<<<<<< HEAD
+        self.targets = self.lesion_dataset.loc[:, "lesion_type"].to_numpy(
+            dtype=np.int64
+        )
+=======
+>>>>>>> master
 
     def __getitem__(self, item_index):
 

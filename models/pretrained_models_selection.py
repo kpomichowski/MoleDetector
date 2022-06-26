@@ -2,6 +2,10 @@ import torch
 import time
 import os
 from torchvision import models
+<<<<<<< HEAD
+from efficientnet_pytorch import EfficientNet
+=======
+>>>>>>> master
 
 
 def set_parameter_requires_grad(model, feature_extracting):
@@ -31,18 +35,30 @@ def initialize_model(
         model_ft.classifier = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
+<<<<<<< HEAD
+            torch.nn.Dropout(p=0.5),
+=======
+>>>>>>> master
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224
     elif model == "densenet121":
+<<<<<<< HEAD
+        model_ft = models.densenet121(pretrained=pretrained, progress=show_progress)
+=======
         model_ft = models.densenet121(pretrained=True, progress=True)
+>>>>>>> master
         model_ft.name = "densenet121"
         set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
         num_features = model_ft.classifier.in_features
         model_ft.classifier = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
+<<<<<<< HEAD
+            torch.nn.Dropout(p=0.5),
+=======
             torch.nn.Dropout(p=0.2),
+>>>>>>> master
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224
@@ -54,10 +70,22 @@ def initialize_model(
         model_ft.fc = torch.nn.Sequential(
             torch.nn.Linear(in_features=num_features, out_features=128, bias=True),
             torch.nn.ReLU(),
+<<<<<<< HEAD
+            torch.nn.Dropout(p=0.5),
+            torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
+        )
+        input_size = 224
+    elif model == "efficientnet":
+        model_ft = EfficientNet.from_pretrained("efficientnet-b0", num_classes=7)
+        model_ft.name = "EfficientNetB0"
+        model_ft._dropout = torch.nn.Dropout(p=0.5)
+        input_size = 224
+=======
             torch.nn.Dropout(p=0.2),
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
         input_size = 224
+>>>>>>> master
     else:
         raise RuntimeError(f"Inaproperiate model name.")
 
