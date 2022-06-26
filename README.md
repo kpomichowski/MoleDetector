@@ -3,7 +3,7 @@
 
 ### Multiclass classifcation using deep learning CNN's with PyTorch library.
 
-![Different skin lesion types](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/SkinLesionsTypes.png)
+![Different skin lesion types](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/SkinLesionsTypes.png)
 
 ### Data explanation:
 
@@ -21,7 +21,7 @@ File `train.py` provides all functionalities for training.
 
 The HAM10000 dataset is strong imbalanced, so some methods were applied (see `Training info` section):
 
-![Data class distribution](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/data_distribution.png)
+![Data class distribution](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/data_distribution.png)
 
 # `train.py` usage:
 
@@ -107,21 +107,20 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 
 Training/validation curves: 
 
-![Training/Validation curves](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279234_EfficientNetB0_epoch_60_plot.png)
+![Training/Validation curves](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/1656279234_EfficientNetB0_epoch_60_plot.png)
 
 # Test plots:
 
 Metrics (Precision, Recall, Accuracy, F1 score) for each class:
 
-![Metrics for each class](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279252_metrics_EfficientNetB0_test_per_class.png)
+![Metrics for each class](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/1656279252_metrics_EfficientNetB0_test_per_class.png)
 
 Test confusion matrix:
 
-![Confusion matrix](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279252_cm_EfficientNetB0_test.png)
+![Confusion matrix](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/1656279252_cm_EfficientNetB0_test.png)
 
+Average of metrics: Precision, Recall, Accuracy, F1 score for test dataset:
 
-Average of metrics: Precision, Recall, Accuracy, F1 score:
-
-![Avg. of metrics Accuracy, Recall, F1 Score, Precision](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279252_metrics_EfficientNetB0_test_avg.png)
+![Avg. of metrics Accuracy, Recall, F1 Score, Precision](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/1656279252_metrics_EfficientNetB0_test_avg.png)
 
 
