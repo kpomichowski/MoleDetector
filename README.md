@@ -21,7 +21,7 @@ File `train.py` provides all functionalities for training.
 
 The HAM10000 dataset is strong imbalanced, so some methods were applied (see `Training info` section):
 
-![Data class distribution](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/data_distribution.png)
+![Data class distribution](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/DataDistribution.png)
 
 # `train.py` usage:
 
