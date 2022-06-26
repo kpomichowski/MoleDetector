@@ -1,7 +1,7 @@
 # MoleDetector - HAM2018 Multiclass skin lesion classification
 
 
-### Multiclass classifcation using `EfficientNetB0` with PyTorch library.
+### Multiclass classifcation using deep learning CNN's with PyTorch library.
 
 
 PyTorch software for multiclassification of the skin cancer.
@@ -42,15 +42,19 @@ optional arguments:
   --factor FACTOR       Patience for ReduceLROnPlateau. Default value is 0.5.
   --loss LOSS           Default: CrossEntropyLoss. Possible loss functions: `crossentropyloss`, `focalloss`.
   --unfreeze-weights    Partially unfrozen layers for the model.
-
 ```
 
 # Example of usage the script `train.py`
 
-
 ```
 python train.py --csv data/ --image-folder data/HAM10000/ --model efficientnet --batch-size 32 --lr 0.00001 --epochs 60 --optimizer adam --loss focalloss --alpha --gamma 2 --scheduler plateau --patience 5 --factor 0.2 --gpu --unique --no-oversample
 ```
+
+# Available models to train (with transfer learning):
+ * `ResNet50` (`--model resnet50`),
+ * `DenseNet121` (`--model densenet121`),
+ * `EfficientNetB0` (`--model efficientnet`),
+ * `VGG19` (`--model vgg19`).
 
 # Data folder destination
 
@@ -76,30 +80,30 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 
 ### Training information:
 
-| Training | Validation |
+| Train | Validation |
 |:--------:|:----------:|
-| ~85%     |~90%        |
+| ~88%     |~90%        |
 
 
 # Training plots:
 
 Training/validation curves: 
 
-![Training/Validation curves]()
+![Training/Validation curves](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279234_EfficientNetB0_epoch_60_plot.png)
 
 # Test plots:
 
 Metrics (Precision, Recall, Accuracy, F1 score) for each class:
 
-![Metrics for each class]()
+![Metrics for each class](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279252_metrics_EfficientNetB0_test_per_class.png)
 
 Test confusion matrix:
 
-![Confusion matrix]()
+![Confusion matrix](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279252_cm_EfficientNetB0_test.png)
 
 
 Average of metrics: Precision, Recall, Accuracy, F1 score:
 
-![Avg. of metrics Accuracy, Recall, F1 Score, Precision]()
+![Avg. of metrics Accuracy, Recall, F1 Score, Precision](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279252_metrics_EfficientNetB0_test_avg.png)
 
 
