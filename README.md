@@ -40,7 +40,7 @@ optional arguments:
   --oversample          Oversampling imbalanced class in data by WeightedRandomSampler.
   --no-oversample       Classes won't be oversampled.
   --checkpoints [CHECKPOINTS]
-                        Creates checkpoints while training the model. Weights of the model will be saved in Google Drive folder.
+                        Creates checkpoints while training the model. Weights of the model will be saved in Google Drive folder, if training is not perfomer at Google Colab, the weights will be saved in `model_weights` folder.
   --image-folder IMAGE_FOLDER
                         Source path to folder that contains skin cancer images.
   --model MODEL         Model to train and evaluate data.
@@ -58,6 +58,7 @@ optional arguments:
   --factor FACTOR       Patience for ReduceLROnPlateau. Default value is 0.5.
   --loss LOSS           Default: CrossEntropyLoss. Possible loss functions: `crossentropyloss`, `focalloss`.
   --unfreeze-weights    Partially unfrozen layers for the model.
+
 ```
 
 # Example of usage the script `train.py`
