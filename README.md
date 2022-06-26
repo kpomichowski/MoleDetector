@@ -85,21 +85,21 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 
 Training/validation curves: 
 
-![Training/Validation curves]()
+![Training/Validation curves](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279234_EfficientNetB0_epoch_60_plot.png)
 
 # Test plots:
 
 Metrics (Precision, Recall, Accuracy, F1 score) for each class:
 
-![Metrics for each class]()
+![Metrics for each class](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279252_metrics_EfficientNetB0_test_per_class.png)
 
 Test confusion matrix:
 
-![Confusion matrix]()
+![Confusion matrix](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279252_cm_EfficientNetB0_test.png)
 
 
 Average of metrics: Precision, Recall, Accuracy, F1 score:
 
-![Avg. of metrics Accuracy, Recall, F1 Score, Precision]()
+![Avg. of metrics Accuracy, Recall, F1 Score, Precision](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/1656279252_metrics_EfficientNetB0_test_avg.png)
 
 
