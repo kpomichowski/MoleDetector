@@ -165,7 +165,7 @@ class Trainer(base_trainer.BaseTrainer):
         return metrics
 
     def __compute_metrics(
-        self, correct_total: int, running_loss: float, total_items: int,
+        self, correct_total: int, running_loss: float, total_items: int
     ) -> tuple:
         acc = 100 * (correct_total / total_items)
         r_loss = running_loss / total_items

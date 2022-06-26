@@ -66,7 +66,7 @@ def get_sampler(train_dataset, oversample: bool) -> None or WeightedRandomSample
 
 
 def get_data_loaders(
-    datasets: dict, stratify: bool, batch_size: int = 64, over_sample: bool = True,
+    datasets: dict, stratify: bool, batch_size: int = 64, over_sample: bool = True
 ) -> dict:
     loaders = {}
     modes = ["train", "val", "test"]
@@ -203,4 +203,6 @@ def save_on_checkpoint(model, epoch_number: int) -> None:
             },
             path,
         )
-        print(f"[INFO] Succesfully saved checkpoint to the {path} at epoch {epoch_number}.")
+        print(
+            f"[INFO] Succesfully saved checkpoint to the {path} at epoch {epoch_number}."
+        )

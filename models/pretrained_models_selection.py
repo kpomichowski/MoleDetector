@@ -2,6 +2,7 @@ import torch
 import time
 import os
 from torchvision import models
+from efficientnet_pytorch import EfficientNet
 
 
 def set_parameter_requires_grad(model, feature_extracting):
@@ -36,7 +37,7 @@ def initialize_model(
         )
         input_size = 224
     elif model == "densenet121":
-        model_ft = models.densenet121(pretrained=True, progress=True)
+        model_ft = models.densenet121(pretrained=pretrained, progress=show_progress)
         model_ft.name = "densenet121"
         set_parameter_requires_grad(model_ft, feature_extracting=feature_extraction)
         num_features = model_ft.classifier.in_features
@@ -58,6 +59,10 @@ def initialize_model(
             torch.nn.Dropout(p=0.5),
             torch.nn.Linear(in_features=128, out_features=num_classes, bias=True),
         )
+        input_size = 224
+    elif model == "efficientnet":
+        model_ft = EfficientNet.from_pretrained("efficientnet-b0", num_classes=7)
+        model_ft.name = "EfficientNetB4"
         input_size = 224
     else:
         raise RuntimeError(f"Inaproperiate model name.")

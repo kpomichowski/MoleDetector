@@ -9,10 +9,7 @@ from utils.train_utils import (
     count_model_parameters,
 )
 
-from models.pretrained_models_selection import (
-    initialize_model,
-    save_model,
-)
+from models.pretrained_models_selection import initialize_model, save_model
 
 from utils.plots import plot_metrics, plot_confusion_matrix
 
@@ -26,7 +23,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--csv", type=str, default="./data/", help="Source path to .csv data.",
+        "--csv", type=str, default="./data/", help="Source path to .csv data."
     )
 
     parser.add_argument(
@@ -94,14 +91,14 @@ if __name__ == "__main__":
         "--patience",
         type=int,
         default=5,
-        help="Patience for ReduceLROnPlateau. Default is 5.",
+        help="Patience for ReduceLROnPlateau. Default value is 5.",
     )
 
     parser.add_argument(
         "--factor",
         type=float,
         default=0.5,
-        help="Patience for ReduceLROnPlateau. Default is 0.5.",
+        help="Patience for ReduceLROnPlateau. Default value is 0.5.",
     )
 
     parser.add_argument(
@@ -203,7 +200,7 @@ if __name__ == "__main__":
         input_size=input_size,
         unique=args.unique,
     )
-     
+
     data_loaders = get_data_loaders(
         datasets=datasets,
         over_sample=args.oversample,
@@ -230,8 +227,8 @@ if __name__ == "__main__":
         layers=args.layers if hasattr(args, "layers") else None,
         gamma=args.gamma if hasattr(args, "gamma") else None,
         checkpoints=args.checkpoints if hasattr(args, "checkpoints") else None,
-        factor=args.factor if hasattr(args, 'factor') else None,
-        momentum=args.factor if hasattr(args, 'momentum') else None,
+        factor=args.factor if hasattr(args, "factor") else None,
+        momentum=args.factor if hasattr(args, "momentum") else None,
         class_count=class_count,
         device=device,
         validate=True,

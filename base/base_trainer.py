@@ -20,15 +20,9 @@ def get_kwargs_params(obj, **kwargs):
 
 class BaseTrainer(metaclass=abc.ABCMeta):
 
-    __schedulers = {
-        "plateau": optim.lr_scheduler.ReduceLROnPlateau,
-        "cosine": optim.lr_scheduler.CosineAnnealingWarmRestarts,
-    }
+    __schedulers = {"plateau": optim.lr_scheduler.ReduceLROnPlateau}
 
-    __optimizers = {
-        "adam": optim.Adam,
-        "sgd": optim.SGD,
-    }
+    __optimizers = {"adam": optim.Adam, "sgd": optim.SGD}
 
     __losses = {
         "crossentropyloss": torch.nn.CrossEntropyLoss,
@@ -61,7 +55,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         self.unfreeze_weights = unfreeze_weights
         if self.unfreeze_weights:
             self.layers = layers
-        
+
         self.checkpoints = kwargs.get("checkpoints")
 
     def __init_loss(
@@ -80,11 +74,28 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         if class_count is not None and loss == "crossentropyloss":
             criterion = loss_(weight=normed_weights)
         elif class_count is not None and loss == "focalloss":
-            criterion = loss_(
-                gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
+            # criterion = loss_(
+            #     gamma=gamma, alpha=normed_weights, reduction="mean", device=self.device
+            # )
+            criterion = torch.hub.load(
+                "adeelh/pytorch-multi-class-focal-loss",
+                model="FocalLoss",
+                alpha=normed_weights,
+                gamma=gamma,
+                reduction="mean",
+                force_reload=False,
+                verbose=True,
             )
         elif class_count is None and loss == "focalloss":
-            criterion = loss_(gamma=gamma, reduction="mean", device=self.device)
+            # criterion = loss_(gamma=gamma, reduction="mean", device=self.device)
+            criterion = torch.hub.load(
+                "adeelh/pytorch-multi-class-focal-loss",
+                alpha=None,
+                gamma=gamma,
+                reduction="mean",
+                force_reload=False,
+                verbose=True,
+            )
         else:
             criterion = loss_()
 
@@ -107,7 +118,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
                 )
             elif scheduler_name == "cosine":
                 scheduler = scheduler(
-                    self.optimizer, T_0=10, T_mult=1, verbose=True, **scheduler_params,
+                    self.optimizer, T_0=10, T_mult=1, verbose=True, **scheduler_params
                 )
             else:
                 raise NotImplementedError
@@ -123,14 +134,14 @@ class BaseTrainer(metaclass=abc.ABCMeta):
             optimizer = optimizer(
                 filter(lambda param: param.requires_grad, self.model.parameters()),
                 lr=lr,
-                weight_decay=1e-5,
+                weight_decay=1e-6,
                 **optimizer_params,
             )
         elif optimizer_name == "sgd":
             optimizer = optimizer(
                 filter(lambda param: param.requires_grad, self.model.parameters()),
                 lr=lr,
-                momentum=optimizer_params.pop('momentum', 0.9),
+                momentum=optimizer_params.pop("momentum", 0.9),
                 weight_decay=1e-6,
                 **optimizer_params,
             )
@@ -251,10 +262,7 @@ class BaseTrainer(metaclass=abc.ABCMeta):
     def __plot_loss_and_acc(self, data, epoch):
         model_name = self.model.name
         plots.plot_save_loss_acc(
-            model_name=model_name,
-            data=data,
-            path_to_save_plot=f"./plots/",
-            epoch=epoch,
+            model_name=model_name, data=data, path_to_save_plot=f"./plots/", epoch=epoch
         )
 
     def _compute_acc(self, predicts: torch.Tensor, target_gt: torch.Tensor):
