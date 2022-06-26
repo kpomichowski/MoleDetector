@@ -3,6 +3,18 @@
 
 ### Multiclass classifcation using deep learning CNN's with PyTorch library.
 
+![Different skin lesion types](https://github.com/kpomichowski/MoleDetector/blob/trainer/TrainingImages/SkinLesionsTypes.png)
+
+### Data explanation:
+
+ - `bkl` - considered as `benign keratosis-like lesions` - **(benign)** case,
+ - `bcc` - `basal cell carcinoma` - **melanoma** case,
+ - `akiec` - `Bowen's disease` - easy treatable cancer (**melanoma** case),
+ - `df` - dermatofibroma - (**benign** case),
+ - `mel`  - **melanoma** case,
+ - `nv` - melanocytic nevi (**benign** case),
+ - `vasc` - vascular lesions (**benign** case).
+
 
 PyTorch software for multiclassification of the skin cancer.
 File `train.py` provides all functionalities for training.
