@@ -114,15 +114,15 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 
 # Test set plots:
 
-### metrics (Precision, Recall, Accuracy, F1 score) for each class:
+### Metrics (Precision, Recall, Accuracy, F1 score) for each class:
 
 ![Metrics for each class](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319918_metrics_EfficientNetB0_test_per_class.png)
 
-### confusion matrix:
+### Confusion matrix:
  
 ![Confusion matrix](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319917_cm_EfficientNetB0_test.png)
 
-### Average of metrics: Precision, Recall, Accuracy, F1 score for test dataset:
+### Average of metrics (Precision, Recall, Accuracy, F1 score) for test dataset:
 
 ![Avg. of metrics Accuracy, Recall, F1 Score, Precision](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319918_metrics_EfficientNetB0_test_avg.png)
 
