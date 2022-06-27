@@ -95,7 +95,7 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
  * loss function was weighted for each class due to data imbalance (parameter `--alpha`) with parameter `--gamma 2`,
  * different models were tested: `VGG19`, `ResNet50`, `EfficientNetB0` (the best option),
  * optimizer: `Adam`, with `weight_decay`: 1e-4,
- * hyperparameters: `batch_size`: 32, `learning_rate`: 0.00001, `epochs`: 60,
+ * hyperparameters: `batch_size`: 32, `learning_rate`: 0.00001, `epochs`: 50,
  * `torch.nn.Dropout(p=0.5)` was applied before last fully connected layer to prevent overfitting,
  * scheduler `ReduceLROnPlateau` [link](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ReduceLROnPlateau.html) was used to reduce learning rate by factor 0.2 based on validation loss within 5 epochs, parameters (`--patience 5`, `--factor 0.2`).
 
