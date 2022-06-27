@@ -108,22 +108,30 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 
 # Training plots:
 
-Training/validation curves: 
+### Training/validation learning curves: 
 
 ![Training/Validation curves](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319902_EfficientNetB0_epoch_50_plot.png)
 
-# Test plots:
+# Test set plots:
 
-Metrics (Precision, Recall, Accuracy, F1 score) for each class:
+### metrics (Precision, Recall, Accuracy, F1 score) for each class:
 
 ![Metrics for each class](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319918_metrics_EfficientNetB0_test_per_class.png)
 
-Test confusion matrix:
-
+### confusion matrix:
+ 
 ![Confusion matrix](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319917_cm_EfficientNetB0_test.png)
 
-Average of metrics: Precision, Recall, Accuracy, F1 score for test dataset:
+### Average of metrics: Precision, Recall, Accuracy, F1 score for test dataset:
 
 ![Avg. of metrics Accuracy, Recall, F1 Score, Precision](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319918_metrics_EfficientNetB0_test_avg.png)
 
+# Evaluation for fun
+
+For fun, I've uploaded from my mobile phone images of my own skin lesions.
+Evaluation was performed in one of this [notebooks](https://github.com/kpomichowski/MoleDetector/blob/master/notebooks/HAM10000_inferece.ipynb)
+
+Below is a plot with three largest skin lesion probabilities from the model predictions.
+
+![Inference play, skin lesions predictions](https://github.com/kpomichowski/MoleDetector/blob/master/images/InferenceSkinLesions.png)
 
