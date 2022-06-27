@@ -3,7 +3,7 @@
 
 ### Multiclass classifcation using deep learning CNN's with PyTorch library.
 
-![Different skin lesion types](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/SkinLesionsTypes.png)
+![Different skin lesion types](https://github.com/kpomichowski/MoleDetector/blob/master/images/SkinLesionsTypes.png)
 
 ### Data explanation:
 
@@ -21,7 +21,7 @@ File `train.py` provides all functionalities for training.
 
 The HAM10000 dataset is strong imbalanced, so some methods were applied (see `Training info` section):
 
-![Data class distribution](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/DataDistribution.png)
+![Data class distribution](https://github.com/kpomichowski/MoleDetector/blob/master/images/DataDistribution.png)
 
 # `train.py` usage:
 
@@ -88,7 +88,7 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 # Training information of the model `EfficientNetB0`.
 
 ### Training info:
- * model was trained without oversampling the images (option `--oversample` duplicates the augemented samples along the batch with PyTorch `WeightedRandomSampler`),
+ * model was trained without oversampling the images (option `--oversample` duplicates the augemented samples along the batch with PyTorch `WeightedRandomSampler` [link](https://pytorch.org/docs/stable/data.html#torch.utils.data.WeightedRandomSampler),
  * for each band of the RGB image in `training`, `validation` data, mean and standard deviation of each channel was calculated,
  * on training data, there were applied transformations such as: `RandomHorizontalFlip`, `RandomVerticalFlip`, `RandomRotation`, `ColorJitter`,
  * loss function `FocalLoss` [link](https://arxiv.org/abs/1708.02002v2) was implemented, because of the imbalanced dataset,
@@ -96,7 +96,8 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
  * different models were tested: `VGG19`, `ResNet50`, `EfficientNetB0` (the best option),
  * optimizer: `Adam`, with `weight_decay`: 1e-4,
  * hyperparameters: `batch_size`: 32, `learning_rate`: 0.00001, `epochs`: 60,
- * `torch.nn.Dropout(p=0.5)` was applied before last fully connected layer to prevent overfitting.
+ * `torch.nn.Dropout(p=0.5)` was applied before last fully connected layer to prevent overfitting,
+ * scheduler `ReduceLROnPlateau` [link](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ReduceLROnPlateau.html) was used to reduce learning rate by factor 0.2 based on validation loss within 5 epochs, parameters (`--patience 5`, `--factor 0.2`).
 
 ### Accuracy during training:
 
@@ -109,20 +110,20 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 
 Training/validation curves: 
 
-![Training/Validation curves](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/1656279234_EfficientNetB0_epoch_60_plot.png)
+![Training/Validation curves](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319902_EfficientNetB0_epoch_50_plot.png)
 
 # Test plots:
 
 Metrics (Precision, Recall, Accuracy, F1 score) for each class:
 
-![Metrics for each class](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/1656279252_metrics_EfficientNetB0_test_per_class.png)
+![Metrics for each class](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319918_metrics_EfficientNetB0_test_per_class.png)
 
 Test confusion matrix:
 
-![Confusion matrix](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/1656279252_cm_EfficientNetB0_test.png)
+![Confusion matrix](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319917_cm_EfficientNetB0_test.png)
 
 Average of metrics: Precision, Recall, Accuracy, F1 score for test dataset:
 
-![Avg. of metrics Accuracy, Recall, F1 Score, Precision](https://github.com/kpomichowski/MoleDetector/blob/master/TrainingImages/1656279252_metrics_EfficientNetB0_test_avg.png)
+![Avg. of metrics Accuracy, Recall, F1 Score, Precision](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319918_metrics_EfficientNetB0_test_avg.png)
 
 
