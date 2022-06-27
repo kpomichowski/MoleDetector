@@ -129,7 +129,7 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 # Evaluation for fun
 
 For fun, I've uploaded from my mobile phone images of my own skin lesions.
-Evaluation was performed in one of this [notebook](https://github.com/kpomichowski/MoleDetector/blob/master/notebooks/HAM10000_inferece.ipynb)
+Evaluation was performed in one of this [notebook](https://github.com/kpomichowski/MoleDetector/blob/master/notebooks/HAM10000_inferece.ipynb).
 
 Below is a plot with three largest skin lesion probabilities from the model predictions.
 
