@@ -1,4 +1,4 @@
-# MoleDetector - HAM2018 Multiclass skin lesion classification
+# MoleDetector - HAM10000 2018 Multiclass skin lesion classification
 
 
 ### Multiclass classifcation using deep learning CNN's with PyTorch library.
