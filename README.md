@@ -135,3 +135,6 @@ Below is a plot with three largest skin lesion probabilities from the model pred
 
 ![Inference play, skin lesions predictions](https://github.com/kpomichowski/MoleDetector/blob/master/images/InferenceSkinLesions.png)
 
+The models were trained on two platforms: [Google Colab](https://colab.research.google.com/) and [AWS Sagemaker Studio Lab](https://studiolab.sagemaker.aws/) - highly recommend this one!
+
+A sample model training notebook is available [here](https://github.com/kpomichowski/MoleDetector/blob/master/notebooks/HAM10000_notebook_training.ipynb).
