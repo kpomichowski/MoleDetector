@@ -103,7 +103,7 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 
 | Train | Validation |
 |:--------:|:----------:|
-| ~88%     |~84%        |
+| ~86%     |~84%        |
 
 
 # Training plots:
