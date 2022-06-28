@@ -13,7 +13,7 @@
  - `df` - dermatofibroma - (**benign** case),
  - `mel`  - **melanoma** case,
  - `nv` - melanocytic nevi (**benign** case),
- - `vasc` - vascular lesions (**benign** case).
+ - `vasc` - vascular lesions (**malignant** case).
 
 
 PyTorch software for multiclassification of the skin cancer.
