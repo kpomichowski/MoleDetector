@@ -8,10 +8,10 @@
 ### Data explanation:
 
  - `bkl` - considered as `benign keratosis-like lesions` - **(benign)** case,
- - `bcc` - `basal cell carcinoma` - **melanoma** case,
- - `akiec` - `Bowen's disease` - easy treatable cancer (**melanoma** case),
+ - `bcc` - `basal cell carcinoma` - **malignant** case,
+ - `akiec` - `Bowen's disease` - easy treatable cancer (**malignant** case),
  - `df` - dermatofibroma - (**benign** case),
- - `mel`  - **melanoma** case,
+ - `mel`  - **malignant** case,
  - `nv` - melanocytic nevi (**benign** case),
  - `vasc` - vascular lesions (**malignant** case).
 
