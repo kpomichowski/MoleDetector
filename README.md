@@ -134,8 +134,6 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 
 ![Avg. of metrics Accuracy, Recall, F1 Score, Precision](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319918_metrics_EfficientNetB0_test_avg.png)
 
-# Metrics Precision, Recall, Accuracy, F1 score (per class in NumPy array):
-
 # Evaluation for fun
 
 For fun, I've uploaded from my mobile phone images of my own skin lesions.
