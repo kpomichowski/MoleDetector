@@ -106,6 +106,14 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 | ~86%     |~84%        |
 
 
+### Metrics foreach class - test dataset:
+
+| Metric | akiec (bowen's disease) | bcc (basal cell carcinoma) | bkl (benign keratosis-like lesions) | df (dermatofibroma) | mel (melanoma) | nv (melanocytic nevi) | vasc (vascular lesions) |
+|:-------|:-----------------------:|:--------------------------:|:-----------------------------------:|:-------------------:|:--------------:|:------------------------:|:-----------------------:|
+| Accuracy     |  46%                    |  90%                 |      64%                            |          20%        |    60%         |      89%                  |         70%             | 
+| Precision    |   61%                   |  57%                 |      67%                            |         66%         |      45%       |    94%                    |   85%                   |                      | 
+| Recall       |   46%                   |  90%                 |      64%                            |    20%              |     61%        |    89%                    |   71%                   |                      |
+| F1-score     |   53%                   |  70%                 |      66%                            |   31%               | 52%            | 92%                      |   77%                   |
 # Training plots:
 
 ### Training/validation learning curves: 
@@ -125,6 +133,8 @@ If you put the csv files and `HAM10000` image folder in `data` at the root path,
 ### Average of metrics (Precision, Recall, Accuracy, F1 score) for test dataset:
 
 ![Avg. of metrics Accuracy, Recall, F1 Score, Precision](https://github.com/kpomichowski/MoleDetector/blob/master/images/1656319918_metrics_EfficientNetB0_test_avg.png)
+
+# Metrics Precision, Recall, Accuracy, F1 score (per class in NumPy array):
 
 # Evaluation for fun
 
