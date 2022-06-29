@@ -133,10 +133,10 @@ class Trainer(base_trainer.BaseTrainer):
         TP = np.diag(confusion_matrix)
         FP = np.sum(confusion_matrix, axis=0) - TP
         FN = np.sum(confusion_matrix, axis=1) - TP
-        recall = TP / (TP + FN)
-        F1_score = TP / (TP + 0.5 * (FP + FN))
+        recall = np.divide(TP, TP + FN, out=np.zeros_like(TP, dtype=np.float16), where=((TP != 0) & (FP != 0)))
+        F1_score = np.divide(TP, TP + 0.5 * (FP + FN), out=np.zeros_like(TP, dtype=np.float16), where=((FP != 0) & (FN != 0) & (TP != 0)))
         precision = np.divide(TP, TP + FP, out=np.zeros_like(TP, dtype=np.float16), where=((TP != 0) & (FP != 0)))
-        accuracy, _ = self.__compute_metrics(correct_total=correct_total, running_loss=0, batch_length=batch_length)
+        accuracy, _ = self.__compute_metrics(correct_total=correct_total, running_loss=0, total_items=batch_length * len(data_loader))
 
         print(f'Accuracy: {accuracy}')
         print(f"Confusion matrix:\n", confusion_matrix)
