@@ -61,8 +61,8 @@ def initialize_model(
         )
         input_size = 224
     elif model == "efficientnet":
-        model_ft = EfficientNet.from_pretrained("efficientnet-b1", num_classes=7)
-        model_ft.name = "EfficientNetB1"
+        model_ft = EfficientNet.from_pretrained("efficientnet-b0", num_classes=7)
+        model_ft.name = "EfficientNetB0"
         model_ft._dropout = torch.nn.Dropout(p=0.5)
         input_size = 224
     else:
