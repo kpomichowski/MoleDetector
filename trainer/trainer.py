@@ -124,7 +124,7 @@ class Trainer(base_trainer.BaseTrainer):
                 for target, prediction in zip(targets_.view(-1), predictions.view(-1)):
                     confusion_matrix[prediction.long(), target.long()] += 1
 
-                _, correct_predicts = self._compute_acc(
+                batch_length, correct_predicts = self._compute_acc(
                     predicts=predictions, target_gt=targets_
                 )
 
@@ -136,14 +136,10 @@ class Trainer(base_trainer.BaseTrainer):
         recall = TP / (TP + FN)
         F1_score = TP / (TP + 0.5 * (FP + FN))
         precision = np.divide(TP, TP + FP, out=np.zeros_like(TP, dtype=np.float16), where=((TP != 0) & (FP != 0)))
-        accuracy = np.divide(
-            np.diag(confusion_matrix),
-            np.sum(confusion_matrix, axis=0),
-            where=np.sum(confusion_matrix, axis=0) != 0,
-        )
+        accuracy, _ = self.__compute_metrics(correct_total=correct_total, running_loss=0, batch_length=batch_length)
 
+        print(f'Accuracy: {accuracy}')
         print(f"Confusion matrix:\n", confusion_matrix)
-        print(f"Per class acc.: {accuracy}")
         print(f"Per class precision: {precision}")
         print(f"Per class recall: {recall}")
         print(f"Per class F1 score: {F1_score}")
@@ -155,10 +151,10 @@ class Trainer(base_trainer.BaseTrainer):
             "avg": [
                 np.mean(recall),
                 np.mean(precision),
-                np.mean(accuracy),
+                accuracy,
                 np.mean(F1_score),
             ],
-            "per_class": [accuracy, precision, recall, F1_score],
+            "per_class": [precision, recall, F1_score],
             "cm": confusion_matrix,
         }
 

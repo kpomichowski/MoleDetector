@@ -112,12 +112,12 @@ def plot_metrics(
             "scores": [metrics[-2], metrics[1], metrics[0], metrics[-1]],
         }
         sns.barplot(x="metrics", y="scores", data=data)
-        plt.title("Average metrics for all classes")
+        plt.title("Average metrics for all classes (except Accuracy score)")
         plt.ylabel("Scores")
         plt.xlabel("Metrics")
     elif metric_type == "per_class":
         metrics_scores = np.vstack(metrics.get(metric_type))
-        metrics = ["Accuracy", "Precision", "Recall", "F1 score"]
+        metrics = ["Precision", "Recall", "F1 score"]
         class_labels = ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
         scores = []
         for l_index in range(len(class_labels)):
