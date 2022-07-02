@@ -151,7 +151,7 @@ class Trainer(base_trainer.BaseTrainer):
             "avg": [
                 np.mean(recall),
                 np.mean(precision),
-                accuracy,
+                accuracy / 100,
                 np.mean(F1_score),
             ],
             "per_class": [precision, recall, F1_score],
